@@ -1,0 +1,261 @@
+<p-toast></p-toast>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4">
+  <div class="max-w-7xl mx-auto">
+    <!-- Mobile Header -->
+    <div class="md:hidden flex justify-between mb-6">
+      <div class="flex gap-3">
+        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="p-2 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white">
+          <i class="pi {{ mobileMenuOpen() ? 'pi-times' : 'pi-bars' }}"></i>
+        </button>
+        <img class="w-8 h-8" src="/favicon.ico" alt="Logo" />
+      </div>
+      <button (click)="navigateToCreateTicket()" class="flex gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-lg">
+        <i class="pi pi-plus"></i> Nuevo
+      </button>
+    </div>
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between mb-6 gap-4" [ngClass]="{'block': mobileMenuOpen(), 'hidden': !mobileMenuOpen(), 'md:flex': true}">
+      <div class="flex gap-4">
+        <img class="w-12 h-12 hidden md:block" src="/favicon.ico" alt="Logo" />
+        <div>
+          <h1 class="text-2xl font-bold text-white">Gestión de Tickets</h1>
+          <p class="text-sm text-gray-400">Área: {{ areaUser() }}</p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button (click)="navigateToCreateTicket()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+          <i class="pi pi-plus"></i> Nuevo Ticket
+        </button>
+        <button (click)="logout()" class="flex items-center gap-2 border border-gray-500 hover:border-gray-400 text-white py-2 px-6 rounded-lg">
+          <i class="pi pi-sign-out"></i> Cerrar Sesión
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+  @for (stat of [
+      { icon: 'pi pi-ticket', label: 'Total', value: stats().total, color: 'blue' },
+      { icon: 'pi pi-clock', label: 'Pendientes', value: stats().pending, color: 'yellow' },
+      { icon: 'pi pi-exclamation-circle', label: 'En Progreso', value: stats().inProgress, color: 'blue' },
+      { icon: 'pi pi-check-circle', label: 'Resueltos', value: stats().resolved, color: 'green' }
+    ]; track $index) {
+    <div class="bg-gray-800 border border-gray-700 hover:border-blue-500 rounded-lg p-4 cursor-pointer" (click)="filterByStat(stat)">
+      <div class="flex gap-4">
+        <div [ngClass]="{
+          'p-3 rounded-lg': true,
+          'bg-blue-600/20': stat.color === 'blue',
+          'bg-yellow-600/20': stat.color === 'yellow',
+          'bg-green-600/20': stat.color === 'green'
+        }">
+          <i class="{{stat.icon}}" [ngClass]="{
+            'text-blue-400': stat.color === 'blue',
+            'text-yellow-400': stat.color === 'yellow',
+            'text-green-400': stat.color === 'green',
+            'text-xl': true
+          }"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-300">{{ stat.label }}</p>
+          <p class="text-xl font-bold text-white">{{ stat.value }}</p>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+    <!-- Filters and Search Bar -->
+    <div class="bg-gray-800 border border-gray-700 rounded-xl mb-8 p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label for="search" class="text-sm text-gray-300 mb-1">Buscar tickets</label>
+          <div class="relative">
+            <i class="pi pi-search text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input id="search" [value]="searchTerm()" (input)="onSearchInput($event)" placeholder="Buscar por ID o asunto..."
+              class="w-full h-12 pl-10 bg-gray-700 border border-gray-600 text-white rounded-lg" />
+          </div>
+        </div>
+        <div>
+          <label for="priority-filter" class="text-sm text-gray-300 mb-1">Prioridad</label>
+          <select id="priority-filter" [value]="selectedPriority() ?? ''" (change)="onPriorityChange($event)"
+            class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg">
+            <option value="">Todas las prioridades</option>
+            <option *ngFor="let option of priorityOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="status-filter" class="text-sm text-gray-300 mb-1">Estado</label>
+          <select id="status-filter" [value]="selectedStatus() ?? ''" (change)="onStatusChange($event)"
+            class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Filter Toggle -->
+    <div class="bg-gray-800 border border-gray-700 rounded-xl mb-6 p-1 inline-flex">
+      @if (user()?.role === 'trabajador') {
+        <button (click)="setTicketFilter('area')" 
+          class="px-4 py-1 rounded-lg {{ ticketFilter() === 'area' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+          Tickets del Área
+        </button>
+      }
+      <button (click)="setTicketFilter('my')"
+        class="px-4 py-1 rounded-lg {{ ticketFilter() === 'my' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+        Mis Tickets
+      </button>
+      @if (user()?.role === 'trabajador' && areaUser() == 'Académico' ) {
+        <button (click)="setTicketFilter('quejas')" 
+          class="px-4 py-1 rounded-lg {{ ticketFilter() === 'quejas' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+          Quejas
+        </button>
+      }
+    </div>
+
+    <!-- Tickets List -->
+    <div class="space-y-4">
+      @for (ticket of filteredTickets(); track ticket.id) {
+        <app-ticket-card [ticket]="ticket" [statusBadge]="getStatusBadge(ticket.status)" [priorityBadge]="getPriorityBadge(ticket.priority)"
+          (cardClicked)="openTicketDetail(ticket)" [user]="user()"></app-ticket-card>
+      }
+      @if (!filteredTickets().length) {
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">
+          <i class="pi pi-inbox text-4xl text-gray-600 mb-4"></i>
+          <h3 class="text-xl font-semibold text-white mb-2">
+            {{ searchTerm() || selectedPriority() || selectedStatus() ? 'No se encontraron tickets' : 'No tienes tickets creados' }}
+          </h3>
+          <p class="text-gray-400 mb-6">
+            {{ searchTerm() || selectedPriority() || selectedStatus() ? 'No hay tickets que coincidan con los filtros.' : 'Crea tu primer ticket.' }}
+          </p>
+          <button (click)="navigateToCreateTicket()" class="flex gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg mx-auto">
+            <i class="pi pi-plus"></i> Crear Ticket
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Ticket Detail Modal -->
+@if (modalActive()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" (click)="modalActive.set(false)">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col"
+         (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="border-b border-gray-700 p-4 flex justify-between items-center bg-gray-900/50">
+        <div class="flex gap-2">
+          <h3 class="text-xl font-bold text-white">Ticket #{{ selectedTicket()?.id?.substring(0, 8) || 'N/A' }}</h3>
+          <div class="flex gap-2 mt-1">
+            <span class="{{getStatusBadge(selectedTicket()?.status || '').class}} px-2 py-1 rounded-full text-xs">
+              {{ getStatusBadge(selectedTicket()?.status || '').label }}
+            </span>
+            @if(ticketFilter() !== 'my') {
+            <span class="{{getPriorityBadge(selectedTicket()?.priority || '').class}} px-2 py-1 rounded-full text-xs">
+              {{ getPriorityBadge(selectedTicket()?.priority || '').label }}
+            </span>
+            }
+          </div>
+        </div>
+        <button (click)="modalActive.set(false)" class="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      
+      <!-- Metadata -->
+      <div class="p-4 border-b border-gray-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-400">Usuario</p>
+            <p class="text-white">{{ selectedTicket()?.nombre_usuario || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400">Área Origen</p>
+            <p class="text-white">{{ selectedTicket()?.area_origen?.nombre || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400">Área Destino</p>
+            <p class="text-white">{{ selectedTicket()?.area_destino?.nombre || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400">Proyecto</p>
+            <p class="text-white">{{ selectedTicket()?.proyecto_id?.nombre || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400">Tipo de Problema</p>
+            <p class="text-white">{{ selectedTicket()?.tipo_problema_id?.nombre || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400">Fecha y Hora</p>
+            <p class="text-white">{{ selectedTicket()?.created_at | date:'medium' }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contenido del ticket -->
+      <div class="p-4 border-b border-gray-700">
+        <h4 class="text-lg font-semibold text-white mb-2">{{ selectedTicket()?.asunto || 'Sin asunto' }}</h4>
+        <p class="text-gray-300 whitespace-pre-line">{{ selectedTicket()?.descripcion || 'Sin descripción' }}</p>
+        
+        <!-- Mostrar imágenes si existen -->
+        @if(selectedTicket()?.image_urls?.length) {
+        <div class="mt-4">
+          <h5 class="text-sm font-medium text-gray-400 mb-2">Imágenes adjuntas</h5>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            @for(url of selectedTicket()?.image_urls; track url) {
+            <img [src]="url" alt="Imagen del ticket" class="rounded-lg border border-gray-700 max-h-32 object-cover">
+            }
+          </div>
+        </div>
+        }
+      </div>
+      
+      <!-- Chat-like messages -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Respuestas -->
+        @for (response of selectedTicket()?.ticket_responses; track response.id) {
+          <div class="flex gap-3" [class.flex-row-reverse]="response.user_id === user()?.user_id">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
+                <i class="pi pi-user text-blue-400"></i>
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="bg-gray-700/50 p-3 rounded-lg">
+                <div class="flex justify-between items-center mb-1">
+                  <p class="text-sm font-medium text-white">
+                    {{ response.user_id === user()?.user_id ? 'Tú' : 'Soporte' }}
+                  </p>
+                  <p class="text-xs text-gray-400">
+                    {{ response.created_at | date:'shortTime' }}
+                  </p>
+                </div>
+                <p class="text-gray-300 whitespace-pre-line">{{ response.mensaje }}</p>
+              </div>
+              <p class="text-xs text-gray-500 mt-1" [class.text-right]="response.user_id === user()?.user_id">
+                {{ response.created_at | date:'mediumDate' }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <!-- Input para responder -->
+      @if(canRespondToTicket()) {
+        <div class="p-4 border-t border-gray-700 bg-gray-900/50">
+          <form (submit)="submitResponse($event)" class="flex gap-3">
+            <textarea [(ngModel)]="responseMessage" name="responseMessage" placeholder="Escribe tu respuesta..."
+              class="flex-1 p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:border-blue-500 focus:outline-none"></textarea>
+            <button type="submit" [disabled]="!responseMessage"
+              class="self-end h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
+              <i class="pi pi-send"></i>
+            </button>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
+  }
+  </div>
+</div>

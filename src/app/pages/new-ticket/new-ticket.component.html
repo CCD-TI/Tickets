@@ -1,0 +1,133 @@
+<p-toast></p-toast>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-3xl mx-auto">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+      <div class="flex items-center gap-4">
+        <div class="p-3 bg-blue-600/20 rounded-lg">
+          <img class="w-10 h-10 object-contain" src="/favicon.ico" alt="Logo" />
+        </div>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Crear Nuevo Ticket</h1>
+          <p class="text-sm sm:text-base text-gray-400">Completa el formulario para registrar una solicitud</p>
+        </div>
+      </div>
+      <button (click)="cancel()"
+        class="w-full sm:w-auto flex items-center justify-center gap-2 border border-gray-500 hover:border-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+        <i class="pi pi-times"></i>
+        <span>Cancelar</span>
+      </button>
+    </div>
+
+    <!-- Mantén el encabezado y estructura general igual -->
+
+    <div class="bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 sm:p-6">
+      <form (ngSubmit)="submitTicket()" class="space-y-6">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Nombre (siempre visible) -->
+          <div>
+            <label for="nombre" class="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+            <input type="text" id="nombre" [(ngModel)]="ticket.nombre_usuario" name="nombre_usuario"
+              class="w-full h-12 px-4 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg" required>
+          </div>
+
+          <!-- Prioridad (solo para admin) -->
+          @if(user?.role === 'admin') {
+          <div>
+            <label for="priority" class="block text-sm font-medium text-gray-300 mb-1">Prioridad *</label>
+            <select id="priority" [(ngModel)]="ticket.priority" name="priority"
+              class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg" required>
+              <option value="" disabled selected>Seleccionar prioridad</option>
+              <option *ngFor="let option of priorityOptions" [value]="option.value">{{option.label}}</option>
+            </select>
+          </div>
+          }
+
+          <!-- Área Destino (solo para trabajadores) -->
+          @if(user?.role === 'trabajador') {
+          <div>
+            <label for="area" class="block text-sm font-medium text-gray-300 mb-1">Área Destino *</label>
+            <select id="area" [(ngModel)]="ticket.area_destino" name="area_destino"
+              class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg" required>
+              <option value="" disabled selected>Seleccionar área</option>
+              <option *ngFor="let option of areas" [value]="option.value">{{option.label}}</option>
+            </select>
+          </div>
+          }
+
+          <!-- Proyecto (solo para trabajadores) -->
+          @if(user?.role === 'trabajador') {
+          <div>
+            <label for="proyecto" class="block text-sm font-medium text-gray-300 mb-1">Proyecto *</label>
+            <select id="proyecto" [(ngModel)]="ticket.proyecto_id" name="proyecto_id"
+              class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg" required>
+              <option value="" selected>Seleccionar proyecto</option>
+              <option *ngFor="let option of proyectos" [value]="option.value">{{option.label}}</option>
+            </select>
+          </div>
+          }
+
+          <!-- Tipo de Problema (siempre visible) -->
+          <div>
+            <label for="tipo_problema" class="block text-sm font-medium text-gray-300 mb-1">Tipo de Problema *</label>
+            <select id="tipo_problema" [(ngModel)]="ticket.tipo_problema_id" name="tipo_problema_id"
+              class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+              required>
+              <option value="" disabled selected>Seleccionar tipo de problema</option>
+              <option *ngFor="let option of tiposProblema" [value]="option.value">{{option.label}}</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="asunto" class="block text-sm font-medium text-gray-300 mb-1">Asunto *</label>
+          <input type="text" id="asunto" [(ngModel)]="ticket.asunto" name="asunto"
+            placeholder="Ej. Problema con el sistema"
+            class="w-full h-12 px-4 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+            required />
+          <p class="mt-1 text-xs text-gray-500">Describe brevemente el problema</p>
+        </div>
+
+        <div>
+          <label for="descripcion" class="block text-sm font-medium text-gray-300 mb-1">Descripción *</label>
+          <textarea id="descripcion" [(ngModel)]="ticket.descripcion" name="descripcion"
+            placeholder="Describe el problema en detalle..."
+            class="w-full px-4 py-3 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 transition-colors"
+            rows="5" required></textarea>
+          <p class="mt-1 text-xs text-gray-500">Incluye todos los detalles relevantes</p>
+        </div>
+
+        <div class="field">
+          <label for="fileInput" class="block text-sm font-medium text-gray-300 mb-1">Imágenes (MAX. 10mb)</label>
+          <input #fileInput type="file" id="fileInput" multiple accept="image/*" (change)="onFileSelect($event)"
+            style="display: none;">
+          <button pButton type="button" (click)="fileInput.click()" [disabled]="isUploading" class="p-button-primary">
+            <i class="pi pi-upload mr-2"></i>
+            <span>Seleccionar Imágenes</span>
+          </button>
+          <div class="image-preview-container mt-3">
+            <div *ngFor="let file of uploadedFiles; let i = index" class="image-preview-item">
+              <p-image [src]="file.url" alt="Imagen del ticket" width="100" [preview]="true"></p-image>
+              <p-tag severity="danger" (click)="removeImage(i)" [styleClass]="'cursor-pointer'">
+                <i class="pi pi-times"></i>
+              </p-tag>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+          <button type="submit"
+            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+            <i class="pi pi-check"></i>
+            <span>Crear Ticket</span>
+          </button>
+          <button type="button" (click)="cancel()"
+            class="w-full sm:w-auto flex items-center justify-center gap-2 border border-gray-500 hover:border-gray-400 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+            <i class="pi pi-times"></i>
+            <span>Cancelar</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

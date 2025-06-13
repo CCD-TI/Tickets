@@ -1,0 +1,29 @@
+.status-open {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+  
+  .status-in_progress {
+    background-color: rgba(234, 179, 8, 0.2);
+    color: #eab308;
+  }
+  
+  .status-closed {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+  }
+  
+  .priority-low {
+    background-color: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+  }
+  
+  .priority-medium {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+  }
+  
+  .priority-high {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }

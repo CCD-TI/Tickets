@@ -32,6 +32,7 @@ export class PanelWorkerComponent {
   selectedStatus = signal<string | null>(null);
   user = signal<UserState | null>(null);
   ticketFilter = signal<'my' | 'area' | 'quejas'>('area');
+  showFilters = signal(false);
   responseMessage = '';
   stats = signal({
     total: 0,

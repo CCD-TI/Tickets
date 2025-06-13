@@ -140,7 +140,7 @@
     <!-- Ticket Detail Modal -->
 @if (modalActive()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" (click)="modalActive.set(false)">
-    <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col"
+    <div class="bg-gray-800 border relative border-gray-700 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col"
          (click)="$event.stopPropagation()">
       
       <!-- Header -->
@@ -165,14 +165,14 @@
       
       <!-- Metadata -->
       <div class="p-4 border-b border-gray-700">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <p class="text-sm text-gray-400">Usuario</p>
             <p class="text-white">{{ selectedTicket()?.nombre_usuario || 'N/A' }}</p>
           </div>
           <div>
             <p class="text-sm text-gray-400">Área Origen</p>
-            <p class="text-white">{{ selectedTicket()?.area_origen?.nombre || 'N/A' }}</p>
+            <p class="text-white">{{ selectedTicket()?.area_origen?.nombre || 'Cliente' }}</p>
           </div>
           <div>
             <p class="text-sm text-gray-400">Área Destino</p>
@@ -204,7 +204,7 @@
           <h5 class="text-sm font-medium text-gray-400 mb-2">Imágenes adjuntas</h5>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             @for(url of selectedTicket()?.image_urls; track url) {
-            <img [src]="url" alt="Imagen del ticket" class="rounded-lg border border-gray-700 max-h-32 object-cover">
+              <p-image [src]="url" alt="Imagen del ticket" width="100" [preview]="true"></p-image>
             }
           </div>
         </div>
@@ -212,7 +212,7 @@
       </div>
       
       <!-- Chat-like messages -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div class="flex-1  mb-[100px] overflow-y-auto p-4 space-y-4">
         <!-- Respuestas -->
         @for (response of selectedTicket()?.ticket_responses; track response.id) {
           <div class="flex gap-3" [class.flex-row-reverse]="response.user_id === user()?.user_id">
@@ -243,7 +243,7 @@
       
       <!-- Input para responder -->
       @if(canRespondToTicket()) {
-        <div class="p-4 border-t border-gray-700 bg-gray-900/50">
+        <div class="p-4 absolute w-full bottom-0 border-t border-gray-700 bg-gray-900/50">
           <form (submit)="submitResponse($event)" class="flex gap-3">
             <textarea [(ngModel)]="responseMessage" name="responseMessage" placeholder="Escribe tu respuesta..."
               class="flex-1 p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:border-blue-500 focus:outline-none"></textarea>

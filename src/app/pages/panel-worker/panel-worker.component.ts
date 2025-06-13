@@ -8,12 +8,13 @@ import { TicketCardComponent } from '../../components/ticket-card/ticket-card.co
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
+import { ImageModule } from 'primeng/image';
 
 @Component({
   selector: 'app-panel-worker',
   templateUrl: './panel-worker.component.html',
   styleUrl: './panel-worker.component.css',
-  imports: [TicketCardComponent, CommonModule, ToastModule, FormsModule]
+  imports: [ImageModule,TicketCardComponent, CommonModule, ToastModule, FormsModule]
 })
 export class PanelWorkerComponent {
   private authService = inject(AuthService);

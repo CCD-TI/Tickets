@@ -14,7 +14,10 @@ export class TicketsService {
   tiposProblema = signal<AID[] | null>(null);
   ticketResponses = signal<Record<string, TicketResponse[]> | null>(null);
 
-  private async fetchTickets(filter?: { key: string; value: string }): Promise<Ticket[] | null> {
+  private async fetchTickets(
+    filter?: { key: string; value: string },
+    excludeNullAreaOrigen: boolean = false
+  ): Promise<Ticket[] | null> {
     const query = this.supabaseService.supabase
       .from('tickets')
       .select(`
@@ -29,6 +32,10 @@ export class TicketsService {
 
     if (filter) {
       query.eq(filter.key, filter.value);
+    }
+
+    if (excludeNullAreaOrigen) {
+      query.not('area_origen', 'is', null);
     }
 
     const { data, error } = await query;
@@ -61,11 +68,43 @@ export class TicketsService {
   }
 
   async getTicketsByArea(areaId: number): Promise<Ticket[] | null> {
-    return this.fetchTickets({ key: 'area_destino', value: areaId.toString() });
+    return this.fetchTickets({ key: 'area_destino', value: areaId.toString() }, true);
   }
 
   async getTicketsByProyecto(proyectoId: number): Promise<Ticket[] | null> {
     return this.fetchTickets({ key: 'proyecto_id', value: proyectoId.toString() });
+  }
+
+  async getTicketsQuejas(): Promise<Ticket[] | null> {
+    const query = this.supabaseService.supabase
+      .from('tickets')
+      .select(`
+        *,
+        tipo_problema_id (*),
+        area_origen (*),
+        area_destino (*),
+        proyecto_id (*),
+        ticket_responses (*)
+      `)
+      .is('area_origen', null)
+      .order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+    if (error) {
+      throw new Error(`Error fetching quejas tickets: ${error.message}`);
+    }
+
+    const tickets = data?.map(ticket => ({
+      ...ticket,
+      tipo_problema_id: ticket.tipo_problema_id as AID,
+      area_origen: ticket.area_origen as AID,
+      area_destino: ticket.area_destino as AID,
+      proyecto_id: ticket.proyecto_id as AID,
+      ticket_responses: ticket.ticket_responses as TicketResponse[]
+    })) || [];
+
+    this.tickets.set(tickets);
+    return tickets;
   }
 
   async createTicket(ticket: CreateTicket): Promise<Ticket | null> {

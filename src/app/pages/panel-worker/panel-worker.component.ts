@@ -117,7 +117,7 @@ export class PanelWorkerComponent {
     } else if (filter === 'area') {
       this.loadAreaTickets();
     } else if (filter === 'quejas') {
-      //this.loadQuejasTickets();
+      this.loadQuejasTickets();
     }
   }
 
@@ -153,22 +153,17 @@ export class PanelWorkerComponent {
     }
   }
 
-  //Falta funcionalidad
-  // private async loadQuejasTickets() {
-  //   try {
-  //     const areaId = this.user()?.area_id;
-  //     if (!areaId) {
-  //       throw new Error('No se encontró el ID del área del usuario');
-  //     }
-  //     await this.ticketsService.getTicketsByType(areaId);
-  //   } catch (error: any) {
-  //     this.messageService.add({
-  //       severity: 'error',
-  //       summary: 'Error',
-  //       detail: error.message || 'No se pudieron cargar los tickets del área.'
-  //     });
-  //   }
-  // }
+  private async loadQuejasTickets() {
+    try {
+      await this.ticketsService.getTicketsQuejas();
+    } catch (error: any) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message || 'No se pudieron cargar los tickets del área.'
+      });
+    }
+  }
 
   navigateToCreateTicket() {
     this.router.navigate(['/new-ticket']);

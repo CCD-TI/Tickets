@@ -19,13 +19,41 @@
             <i class="pi pi-user mr-1"></i>{{ ticket()?.nombre_usuario }}
           </span>
           <span class="text-xs text-gray-400">
-            <i class="pi pi-map-marker mr-1"></i>{{ ticket()?.area_origen?.nombre }}
+            <i class="pi pi-map-marker mr-1"></i>{{ ticket()?.area_origen?.nombre || 'Cliente' }}
           </span>
           <span class="text-xs text-gray-400">
             <i class="pi pi-clock mr-1"></i>{{ ticket()?.created_at | date:'short' }}
           </span>
         </div>
         }
+
+        @if(ticketFilter() === 'my') {
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span class="text-xs text-gray-400">
+              <i class="pi pi-user mr-1"></i>{{ ticket()?.nombre_usuario }}
+            </span>
+            <span class="text-xs text-gray-400">
+              <i class="pi pi-map-marker mr-1"></i>{{ ticket()?.area_destino?.nombre }}
+            </span>
+            <span class="text-xs text-gray-400">
+              <i class="pi pi-clock mr-1"></i>{{ ticket()?.created_at | date:'short' }}
+            </span>
+          </div>
+        }
+
+        @if(ticketFilter() === 'quejas') {
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span class="text-xs text-gray-400">
+              <i class="pi pi-user mr-1"></i>{{ ticket()?.nombre_usuario }}
+            </span>
+            <span class="text-xs text-gray-400">
+              <i class="pi pi-map-marker mr-1"></i>{{ ticket()?.area_origen?.nombre || 'Cliente' }}
+            </span>
+            <span class="text-xs text-gray-400">
+              <i class="pi pi-clock mr-1"></i>{{ ticket()?.created_at | date:'short' }}
+            </span>
+          </div>
+          }
 
         <!-- Descripción -->
         <p class="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 line-clamp-2">{{ ticket()?.descripcion }}</p>
@@ -64,7 +92,7 @@
         </button>
 
         <!-- Dropdown para cambiar estado/prioridad -->
-        @if(canEditTicket()) {
+        @if(ticketFilter() !== 'my') {
         <div class="relative">
           <button (click)="showActionsDropdown.set(!showActionsDropdown()); $event.stopPropagation()"
             class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg h-8 sm:h-10">

@@ -127,8 +127,8 @@
     <!-- Tickets List -->
     <div class="space-y-4 flex flex-col gap-2">
       @for (ticket of filteredTickets(); track ticket.id) {
-        <app-ticket-card [ticket]="ticket" [statusBadge]="getStatusBadge(ticket.status)" [priorityBadge]="getPriorityBadge(ticket.priority)"
-          (cardClicked)="openTicketDetail(ticket)" [user]="user()"></app-ticket-card>
+        <app-ticket-card  [ticket]="ticket" [statusBadge]="getStatusBadge(ticket.status)" [priorityBadge]="getPriorityBadge(ticket.priority)"
+          (cardClicked)="openTicketDetail(ticket)" [user]="user()" [ticketFilter]="ticketFilter()"></app-ticket-card>
       }
       @if (!filteredTickets().length) {
         <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">

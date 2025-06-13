@@ -21,14 +21,15 @@ import { FormsModule } from '@angular/forms';
 })
 export class TicketCardComponent {
   ticket = input<Ticket>();
-  ticketFilter = input<'all' | 'area' | 'my'>('area');
+  ticketFilter = input<'my' | 'area' | 'quejas'>('area');
   statusBadge = input<{ label: string; class: string }>();
   priorityBadge = input<{ label: string; class: string }>();
   user = input<UserState | null>();
   cardClicked = output<void>();
-
   showResponsesModal = signal(false);
   showActionsDropdown = signal(false);
+  showPriority = signal(false);
+  showStatus = signal(false);
   responseMessage = '';
   showResponseForm = signal(false);
 
@@ -62,6 +63,7 @@ export class TicketCardComponent {
         summary: 'Éxito',
         detail: 'Prioridad actualizada correctamente'
       });
+      this.showActionsDropdown.set(false);
     } catch (error) {
       this.messageService.add({
         severity: 'error',
@@ -80,6 +82,7 @@ export class TicketCardComponent {
         summary: 'Éxito',
         detail: 'Estado actualizado correctamente'
       });
+      this.showActionsDropdown.set(false);
     } catch (error) {
       this.messageService.add({
         severity: 'error',
@@ -87,12 +90,6 @@ export class TicketCardComponent {
         detail: 'No se pudo actualizar el estado'
       });
     }
-  }
-
-  canEditTicket(): boolean {
-    // Solo trabajadores pueden editar tickets de su área
-    return this.user()?.role === 'trabajador' &&
-      this.ticket()?.area_destino?.id === this.user()?.area_id;
   }
 
   canRespond(): boolean {
@@ -103,22 +100,22 @@ export class TicketCardComponent {
 
   async submitResponse() {
     if (!this.ticket()?.id || !this.responseMessage.trim()) return;
-    
+
     try {
       await this.ticketsService.addTicketResponse(
-        this.ticket()!.id, 
+        this.ticket()!.id,
         this.responseMessage
       );
-      
+
       this.messageService.add({
         severity: 'success',
         summary: 'Éxito',
         detail: 'Respuesta enviada correctamente'
       });
-      
+
       this.showResponseForm.set(false);
       this.responseMessage = '';
-      
+
     } catch (error) {
       this.messageService.add({
         severity: 'error',

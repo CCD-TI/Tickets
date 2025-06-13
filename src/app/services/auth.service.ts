@@ -50,6 +50,7 @@ export class AuthService {
   async loginWithGoogle() {
     try {
       this.isLoading.set(true);
+      console.log('Iniciando sesión con Google', window.location.origin);
       const { error } = await this.supabaseService.supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

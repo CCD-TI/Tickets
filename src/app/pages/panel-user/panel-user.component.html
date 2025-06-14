@@ -1,276 +1,253 @@
 <p-toast></p-toast>
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8">
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4">
   <div class="max-w-7xl mx-auto">
     <!-- Mobile Header -->
-    <div class="md:hidden flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <button
-          (click)="mobileMenuOpen = !mobileMenuOpen"
-          class="p-2 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
-        >
-          <i class="pi {{ mobileMenuOpen ? 'pi-times' : 'pi-bars' }}"></i>
+    <div class="md:hidden flex justify-between mb-6">
+      <div class="flex gap-3">
+        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="p-2 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white">
+          <i class="pi {{ mobileMenuOpen() ? 'pi-times' : 'pi-bars' }}"></i>
         </button>
-        <div class="p-2 bg-blue-600/20 rounded-lg">
-          <img class="w-8 h-8 object-contain" src="/faviconCCD.ico" alt="Logo" />
-        </div>
+        <img class="w-8 h-8" src="/faviconCCD.ico" alt="Logo" />
       </div>
-      <button
-        (click)="navigateToCreateTicket()"
-        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
-      >
-        <i class="pi pi-plus"></i>
-        <span>Nuevo</span>
+      <button (click)="navigateToCreateTicket()" class="flex gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-lg">
+        <i class="pi pi-plus"></i> Nuevo
       </button>
     </div>
 
     <!-- Header Section -->
-    <div
-      class="flex flex-col md:flex-row items-center justify-between mb-6 md:mb-8 gap-4"
-      [ngClass]="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen, 'md:flex': true}"
-    >
-      <div class="flex items-center gap-4">
-        <div class="p-3 bg-blue-600/20 rounded-lg hidden md:block">
-          <img class="w-12 h-12 object-contain" src="/faviconCCD.ico" alt="Logo" />
-        </div>
-        <div class="text-center md:text-left">
-          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">Mis Tickets</h1>
-          <p class="text-sm sm:text-base text-gray-400">Portal de Usuario - Gestión de Solicitudes</p>
+    <div class="flex flex-col md:flex-row justify-between mb-6 gap-4" [ngClass]="{'block': mobileMenuOpen(), 'hidden': !mobileMenuOpen(), 'md:flex': true}">
+      <div class="flex gap-4">
+        <img class="w-12 h-12 hidden md:block" src="/faviconCCD.ico" alt="Logo" />
+        <div>
+          <h1 class="text-2xl font-bold text-white">Bandeja de Tickets</h1>
         </div>
       </div>
-      <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-        <button
-          (click)="navigateToCreateTicket()"
-          class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg h-12 transition-colors"
-        >
-          <i class="pi pi-plus"></i>
-          <span>Nuevo Ticket</span>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button (click)="navigateToCreateTicket()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+          <i class="pi pi-plus"></i> Nuevo Ticket
         </button>
-        <button
-          (click)="logout()"
-          class="flex items-center justify-center gap-2 border border-gray-500 hover:border-gray-400 text-white font-semibold py-2 px-6 rounded-lg h-12 transition-colors"
-        >
-          <i class="pi pi-sign-out"></i>
-          <span>Cerrar Sesión</span>
+        <button (click)="logout()" class="flex items-center gap-2 border border-gray-500 hover:border-gray-400 text-white py-2 px-6 rounded-lg">
+          <i class="pi pi-sign-out"></i> Cerrar Sesión
         </button>
       </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-      <div 
-        *ngFor="let stat of [
-          { icon: 'pi pi-ticket', label: 'Total', value: stats().total, color: 'blue'},
-          { icon: 'pi pi-clock', label: 'Pendientes', value: stats().pending, color: 'yellow'},
-          { icon: 'pi pi-exclamation-circle', label: 'En Progreso', value: stats().inProgress, color: 'blue'},
-          { icon: 'pi pi-check-circle', label: 'Resueltos', value: stats().resolved, color: 'green'}
-        ]" 
-        class="bg-gray-800 border border-gray-700 hover:border-blue-500/50 shadow-md hover:shadow-lg transition-all rounded-lg cursor-pointer p-4"
-        (click)="filterByStat(stat)"
-      >
-        <div class="flex items-center gap-4">
-          <div [class]="'p-3 rounded-lg bg-' + stat.color + '-600/20'">
-            <i [class]="stat.icon + ' text-' + stat.color + '-400 text-xl'"></i>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+  @for (stat of [
+      { icon: 'pi pi-ticket', label: 'Total', value: stats().total, color: 'blue' },
+      { icon: 'pi pi-clock', label: 'Pendientes', value: stats().pending, color: 'yellow' },
+      { icon: 'pi pi-exclamation-circle', label: 'En Progreso', value: stats().inProgress, color: 'blue' },
+      { icon: 'pi pi-check-circle', label: 'Resueltos', value: stats().resolved, color: 'green' }
+    ]; track $index) {
+    <div class="bg-gray-800 border border-gray-700 hover:border-blue-500 rounded-lg p-4 cursor-pointer" (click)="filterByStat(stat)">
+      <div class="flex gap-4">
+        <div [ngClass]="{
+          'p-3 rounded-lg': true,
+          'bg-blue-600/20': stat.color === 'blue',
+          'bg-yellow-600/20': stat.color === 'yellow',
+          'bg-green-600/20': stat.color === 'green'
+        }">
+          <i class="{{stat.icon}}" [ngClass]="{
+            'text-blue-400': stat.color === 'blue',
+            'text-yellow-400': stat.color === 'yellow',
+            'text-green-400': stat.color === 'green',
+            'text-xl': true
+          }"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-300">{{ stat.label }}</p>
+          <p class="text-xl font-bold text-white">{{ stat.value }}</p>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+  
+    <!-- Ticket Filter Toggle -->
+     <div class="flex justify-between">
+       <div class="bg-gray-800 border border-gray-700 rounded-xl mb-6 p-1 inline-flex">
+         <button (click)="setTicketFilter('my')"
+           class="px-4 py-1 rounded-lg {{ ticketFilter() === 'my' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+           Mis Tickets
+         </button>
+       </div>
+       <div>
+        <button (click)="showFilters.set(!showFilters())" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+          <i class="pi pi-filter"></i> Filtros
+        </button>
+       </div>
+     </div>
+
+     @if (showFilters()) {
+      <!-- Filters and Search Bar -->
+      <div class="bg-gray-800 border border-gray-700 rounded-xl mb-8 p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="search" class="text-sm text-gray-300 mb-1">Buscar tickets</label>
+            <div class="relative">
+              <i class="pi pi-search text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input id="search" [value]="searchTerm()" (input)="onSearchInput($event)" placeholder="Buscar por ID o asunto..."
+                class="w-full h-12 pl-10 bg-gray-700 border border-gray-600 text-white rounded-lg" />
+            </div>
           </div>
           <div>
-            <p class="text-sm text-gray-300">{{ stat.label }}</p>
-            <p class="text-xl font-bold text-white">{{ stat.value }}</p>
+            <label for="status-filter" class="text-sm text-gray-300 mb-1">Estado</label>
+            <select id="status-filter" [value]="selectedStatus() ?? ''" (change)="onStatusChange($event)"
+              class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg">
+              <option value="">Todos los estados</option>
+              <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Filters and Search Bar -->
-    <div class="bg-gray-800 border border-gray-700 shadow-lg rounded-xl mb-8 p-4 sm:p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <!-- Search -->
-        <div>
-          <label for="search" class="block text-sm font-medium text-gray-300 mb-1">Buscar tickets</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <i class="pi pi-search text-gray-500"></i>
-            </div>
-            <input
-              type="text"
-              id="search"
-              [(ngModel)]="searchTerm"
-              placeholder="Buscar por ID o asunto..."
-              class="w-full h-12 pl-10 bg-gray-700 border border-gray-600 text-white rounded-lg focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-        
-        <!-- Priority Filter -->
-        <div>
-          <label for="priority-filter" class="block text-sm font-medium text-gray-300 mb-1">Prioridad</label>
-          <select
-            id="priority-filter"
-            [(ngModel)]="selectedPriority"
-            class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="">Todas las prioridades</option>
-            <option *ngFor="let option of priorityOptions" [value]="option.value">{{option.label}}</option>
-          </select>
-        </div>
-        
-        <!-- Status Filter -->
-        <div>
-          <label for="status-filter" class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
-          <select
-            id="status-filter"
-            [(ngModel)]="selectedStatus"
-            class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="">Todos los estados</option>
-            <option *ngFor="let option of statusOptions" [value]="option.value">{{option.label}}</option>
-          </select>
-        </div>
-      </div>
-    </div>
+    }
 
     <!-- Tickets List -->
-    <div class="space-y-4">
-      @for(ticket of filteredTickets(); track $index) {
-      <app-ticket-card
-        [ticket]="ticket"
-        [statusBadge]="getStatusBadge(ticket.status)"
-        [priorityBadge]="getPriorityBadge(ticket.priority)"
-        (cardClicked)="openTicketDetail(ticket)"
-      ></app-ticket-card>
+    <div class="space-y-4 flex flex-col gap-2">
+      @for (ticket of filteredTickets(); track ticket.id) {
+        <app-ticket-card  [ticket]="ticket" [statusBadge]="getStatusBadge(ticket.status)" [priorityBadge]="getPriorityBadge(ticket.priority)"
+          (cardClicked)="openTicketDetail(ticket)" [user]="user()" [ticketFilter]="ticketFilter()"></app-ticket-card>
       }
-      @if(filteredTickets().length === 0) {
-      <div class="bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-8 sm:p-12 text-center">
-        <i class="pi pi-inbox text-4xl text-gray-600 mx-auto mb-4"></i>
-        <h3 class="text-xl font-semibold text-white mb-2">
-          {{ searchTerm || selectedPriority || selectedStatus ? 'No se encontraron tickets' : 'No tienes tickets creados' }}
-        </h3>
-        <p class="text-gray-400 mb-6">
-          {{ searchTerm || selectedPriority || selectedStatus ? 
-            'No hay tickets que coincidan con los filtros aplicados.' : 
-            'Crea tu primer ticket para comenzar.' }}
-        </p>
-        <button
-          (click)="navigateToCreateTicket()"
-          class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg mx-auto transition-colors"
-        >
-          <i class="pi pi-plus"></i>
-          <span>Crear Ticket</span>
-        </button>
-      </div>
+      @if (!filteredTickets().length) {
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">
+          <i class="pi pi-inbox text-4xl text-gray-600 mb-4"></i>
+          <h3 class="text-xl font-semibold text-white mb-2">
+            {{ searchTerm() || selectedPriority() || selectedStatus() ? 'No se encontraron tickets' : 'No tienes tickets creados' }}
+          </h3>
+          <p class="text-gray-400 mb-6">
+            {{ searchTerm() || selectedPriority() || selectedStatus() ? 'No hay tickets que coincidan con los filtros.' : 'Crea tu primer ticket.' }}
+          </p>
+          <button (click)="navigateToCreateTicket()" class="flex gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg mx-auto">
+            <i class="pi pi-plus"></i> Crear Ticket
+          </button>
+        </div>
       }
     </div>
 
     <!-- Ticket Detail Modal -->
-    <div *ngIf="selectedTicket" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" (click)="modalActive = false">
-      <div 
-        class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
-        (click)="$event.stopPropagation()"
-      >
-        <!-- Modal Header -->
-        <div class="border-b border-gray-700 p-4 sm:p-6 flex justify-between items-center">
-          <h3 class="text-xl font-bold text-white">
-            Detalle del Ticket - #{{ selectedTicket.id.substring(0, 8) }}
-          </h3>
-          <button 
-            (click)="modalActive = false"
-            class="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700"
-          >
-            <i class="pi pi-times"></i>
-          </button>
+@if (modalActive()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" (click)="modalActive.set(false)">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+         (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="border-b border-gray-700 p-4 flex justify-between items-center bg-gray-900/50 sticky top-0 z-10">
+        <div class="flex gap-2 items-center">
+          <h3 class="text-xl font-bold text-white">Ticket #{{ selectedTicket()?.id?.substring(0, 8) || 'N/A' }}</h3>
+          <div class="flex gap-2">
+            <span class="{{getStatusBadge(selectedTicket()?.status || '').class}} px-2 py-1 rounded-full text-xs">
+              {{ getStatusBadge(selectedTicket()?.status || '').label }}
+            </span>
+            @if(ticketFilter() !== 'my') {
+            <span class="{{getPriorityBadge(selectedTicket()?.priority || '').class}} px-2 py-1 rounded-full text-xs">
+              {{ getPriorityBadge(selectedTicket()?.priority || '').label }}
+            </span>
+            }
+          </div>
         </div>
-
-        <!-- Modal Content -->
-        <div class="space-y-6 p-4 sm:p-6">
-          <!-- Status and Priority -->
-          <div class="flex flex-wrap gap-4 mb-4">
+        <button (click)="modalActive.set(false)" class="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700 transition">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      
+      <!-- Contenido principal con scroll -->
+      <div class="flex-1 overflow-y-auto">
+        <!-- Metadata -->
+        <div class="p-4 border-b border-gray-700 bg-gray-800/50">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <span class="text-sm text-gray-400">Estado:</span>
-              <span 
-                [class]="getStatusBadge(selectedTicket.status).class + ' ml-2 px-3 py-1 rounded-full text-xs font-medium'"
-              >
-                {{ getStatusBadge(selectedTicket.status).label }}
-              </span>
+              <p class="text-sm text-gray-400 mb-1">Usuario</p>
+              <p class="text-white font-medium">{{ selectedTicket()?.nombre_usuario || 'N/A' }}</p>
             </div>
             <div>
-              <span class="text-sm text-gray-400">Prioridad:</span>
-              <span 
-                [class]="getPriorityBadge(selectedTicket.priority).class + ' ml-2 px-3 py-1 rounded-full text-xs font-medium'"
-              >
-                {{ getPriorityBadge(selectedTicket.priority).label }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Subject -->
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Asunto</label>
-            <p class="text-lg text-white font-semibold">{{ selectedTicket.asunto || 'Sin asunto' }}</p>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
-            <p class="text-gray-400 whitespace-pre-line">{{ selectedTicket.descripcion || 'Sin descripción' }}</p>
-          </div>
-
-          <!-- Metadata Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Área</label>
-              <p class="text-gray-400">{{ selectedTicket.area_destino.nombre || 'N/A' }}</p>
+              <p class="text-sm text-gray-400 mb-1">Tipo de Problema</p>
+              <p class="text-white font-medium">{{ selectedTicket()?.tipo_problema_id?.nombre || 'N/A' }}</p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Proyecto</label>
-              <p class="text-gray-400">{{ selectedTicket.proyecto_id?.nombre || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Tipo de Problema</label>
-              <p class="text-gray-400">{{ selectedTicket.tipo_problema_id.nombre || 'N/A' }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Fecha de Creación</label>
-              <p class="text-gray-400">{{ selectedTicket.created_at | date: 'medium' }}</p>
+              <p class="text-sm text-gray-400 mb-1">Fecha y Hora</p>
+              <p class="text-white font-medium">{{ selectedTicket()?.created_at | date:'medium' }}</p>
             </div>
           </div>
-
-          <!-- Responses Section -->
-          @if(selectedTicket.ticket_responses.length > 0) {
-            <div class="pt-4 border-t border-gray-700">
-              <label class="block text-sm font-medium text-gray-300 mb-3">Respuestas</label>
-              <div class="space-y-4">
-                @for(response of selectedTicket.ticket_responses; track $index) {
-                  <div class="bg-gray-700/50 p-4 rounded-lg">
+        </div>
+        
+        <!-- Contenido del ticket -->
+        <div class="p-4 border-b border-gray-700">
+          <h4 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="pi pi-file text-blue-400"></i> Descripción Ticket
+          </h4>
+          <div class="rounded-lg">
+            <h4 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+              {{ selectedTicket()?.asunto || 'Sin asunto' }}
+            </h4>
+            <p class="text-gray-300 whitespace-pre-line">{{ selectedTicket()?.descripcion || 'Sin descripción' }}</p>
+            
+            <!-- Mostrar imágenes si existen -->
+            @if(selectedTicket()?.image_urls?.length) {
+            <div class="mt-4">
+              <h5 class="text-sm font-medium text-gray-400 mb-2 flex items-center gap-1">
+                <i class="pi pi-images"></i> Imágenes adjuntas
+              </h5>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                @for(url of selectedTicket()?.image_urls; track url) {
+                  <p-image [src]="url" alt="Imagen del ticket" width="100" [preview]="true" class="border border-gray-600 w-fit rounded-lg overflow-hidden"></p-image>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        
+        <!-- Historial de mensajes -->
+        <div class="p-4">
+          <h4 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="pi pi-comments text-blue-400"></i> Historial de conversación
+          </h4>
+          
+          <div class="space-y-6">
+            @for (response of selectedTicket()?.ticket_responses; track response.id) {
+              <div class="flex gap-4" [class.flex-row-reverse]="response.user_id === user()?.user_id">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
+                    <i class="pi pi-user text-blue-400"></i>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="{{response.user_id === user()?.user_id ? 'bg-blue-900/30' : 'bg-gray-700/50'}} p-4 rounded-lg border {{response.user_id === user()?.user_id ? 'border-blue-800' : 'border-gray-600'}}">
                     <div class="flex justify-between items-center mb-2">
                       <p class="text-sm font-medium text-white">
-                        {{ response.user_id === user?.user_id ? 'Tú' : 'Soporte' }}
-                      </p>
-                      <p class="text-xs text-gray-400">
-                        {{ response.created_at | date: 'medium' }}
+                        {{ response.user_id === user()?.user_id ? 'Tú' : 'Soporte' }}
+                        <span class="text-xs font-normal text-gray-400 ml-2">
+                          {{ response.created_at | date:'mediumDate' }} a las {{ response.created_at | date:'shortTime' }}
+                        </span>
                       </p>
                     </div>
                     <p class="text-gray-300 whitespace-pre-line">{{ response.mensaje }}</p>
                   </div>
-                }
+                </div>
               </div>
-            </div>
-          }
-          @else {
-            <div class="text-center py-6 text-gray-500">
-              No hay respuestas para este ticket.
-            </div>
-          }
-
-          <!-- Actions -->
-          <div class="flex justify-end pt-4 border-t border-gray-700">
-            <button
-              (click)="selectedTicket = null; modalActive = false"
-              class="flex items-center justify-center gap-2 border border-gray-500 hover:border-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-            >
-              <i class="pi pi-times"></i>
-              <span>Cerrar</span>
-            </button>
+            }
           </div>
         </div>
       </div>
+      
+      <!-- Input para responder (fijo en la parte inferior) -->
+      @if(canRespondToTicket()) {
+        <div class="p-4 border-t border-gray-700 bg-gray-900 sticky bottom-0">
+          <form (submit)="submitResponse($event)" class="flex gap-3 items-end">
+            <textarea [(ngModel)]="responseMessage" name="responseMessage" placeholder="Escribe tu respuesta..."
+              class="flex-1 p-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+              rows="2"></textarea>
+            <button type="submit" [disabled]="!responseMessage"
+              class="h-[52px] px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition flex items-center gap-2">
+              <i class="pi pi-send"></i>
+              <span class="hidden sm:inline">Enviar</span>
+            </button>
+          </form>
+        </div>
+      }
     </div>
+  </div>
+  }
   </div>
 </div>

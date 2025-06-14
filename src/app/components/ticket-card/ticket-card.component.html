@@ -1,7 +1,7 @@
 <div class="bg-gray-800 border-l-4 rounded-lg transition-all" 
-  [class.border-blue-500]="ticket()?.priority === 'high' && ticket()?.status !== 'closed'"
-  [class.border-yellow-500]="ticket()?.priority === 'medium' && ticket()?.status !== 'closed'"
-  [class.border-gray-500]="ticket()?.priority === 'low' && ticket()?.status !== 'closed'"
+  [class.border-red-500]="ticket()?.status === 'open'"
+  [class.border-yellow-500]="ticket()?.status === 'in_progress'"
+  [class.border-gray-500]="ticket()?.status === 'pending'"
   [class.border-green-500]="ticket()?.status === 'closed'">
   <div class="p-4 sm:p-6">
     <div class="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">

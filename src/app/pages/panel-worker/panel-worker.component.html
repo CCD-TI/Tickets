@@ -37,8 +37,8 @@
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
   @for (stat of [
       { icon: 'pi pi-ticket', label: 'Total', value: stats().total, color: 'blue' },
-      { icon: 'pi pi-clock', label: 'Pendientes', value: stats().pending, color: 'yellow' },
-      { icon: 'pi pi-exclamation-circle', label: 'En Progreso', value: stats().inProgress, color: 'blue' },
+      { icon: 'pi pi-clock', label: 'Pendientes', value: stats().pending, color: 'red' },
+      { icon: 'pi pi-exclamation-circle', label: 'En Progreso', value: stats().inProgress, color: 'yellow' },
       { icon: 'pi pi-check-circle', label: 'Resueltos', value: stats().resolved, color: 'green' }
     ]; track $index) {
     <div class="bg-gray-800 border border-gray-700 hover:border-blue-500 rounded-lg p-4 cursor-pointer" (click)="filterByStat(stat)">
@@ -47,12 +47,14 @@
           'p-3 rounded-lg': true,
           'bg-blue-600/20': stat.color === 'blue',
           'bg-yellow-600/20': stat.color === 'yellow',
-          'bg-green-600/20': stat.color === 'green'
+          'bg-green-600/20': stat.color === 'green',
+          'bg-red-600/20': stat.color === 'red'
         }">
           <i class="{{stat.icon}}" [ngClass]="{
             'text-blue-400': stat.color === 'blue',
             'text-yellow-400': stat.color === 'yellow',
             'text-green-400': stat.color === 'green',
+            'text-red-400': stat.color === 'red',
             'text-xl': true
           }"></i>
         </div>

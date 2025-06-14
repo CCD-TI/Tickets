@@ -30,9 +30,7 @@ export class AuthService {
 
     this.supabaseService.supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, !!session);
-      if (event === 'SIGNED_IN') {
-        this.getCurrentUser();
-      } else if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT') {
         this.userState.set(null);
       }
     });

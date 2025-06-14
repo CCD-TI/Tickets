@@ -8,7 +8,7 @@ export const authGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) =>
   const router = inject(Router);
 
   try {
-    const user = await authService.getCurrentUser();
+    const user = authService.userState();
     if (!user) {
       console.log('AuthGuard: No autenticado, redirigiendo a login');
       return router.createUrlTree(['/login']);

@@ -90,6 +90,7 @@ export class TicketsService {
       .order('created_at', { ascending: false });
 
     const { data, error } = await query;
+    console.log(data);
     if (error) {
       throw new Error(`Error fetching quejas tickets: ${error.message}`);
     }

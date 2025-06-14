@@ -1,26 +1,41 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
   authService = inject(AuthService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
 
   async ngOnInit() {
-    const { data: { session } } = await this.authService.getSession();
-    if (session) {
-      await this.authService.redirectBasedOnRole(); // Redirige según el rol
+    const queryParams = this.route.snapshot.queryParams;
+    const mail = queryParams['mail'];
+    const dni = queryParams['dni'];
+
+    if (mail && dni) {
+      localStorage.setItem('userEmail', mail);
+      localStorage.setItem('userDNI', dni);
+      await this.authService.loginwithEmail(mail, dni);
+      await this.authService.redirectBasedOnRole(true);
+      return;
+    }
+
+    const sessionResponse = await this.authService.getSession();
+    if (sessionResponse?.data?.session) {
+      console.log('Sesión activa detectada');
+      
+      console.log("estado actual: ", this.authService.userState());
+      await this.authService.redirectBasedOnRole();
     }
   }
 
   loginWithGoogle() {
-    this.authService.loginWithGoogle().then(() => {
-      this.authService.redirectBasedOnRole(); // Redirige tras login exitoso
-    });
+    this.authService.loginWithGoogle();
   }
 
   logout() {

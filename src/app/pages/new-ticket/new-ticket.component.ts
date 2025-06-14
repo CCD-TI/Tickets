@@ -76,12 +76,28 @@ export class NewTicketComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    
+    const dniGuardado = localStorage.getItem('userDNI');
+    if (dniGuardado) {
+      this.ticket.dni = dniGuardado;
+      setTimeout(() => {
+        this.onDniChange(dniGuardado);
+      }, 0);
+    }
 
     // Configuración según rol
     if (this.user.role === 'user') {
       this.ticket.priority = 'low';
       this.ticket.area_destino = 1; // Área académica
       this.ticket.proyecto_id = 10; // Tipo de problema académico
+      const storedDNI = localStorage.getItem('userDNI');
+      if (storedDNI) {
+        this.ticket.dni = storedDNI;
+      }
+      const nombre = localStorage.getItem('userNombre')
+      if(nombre){
+        this.ticket.nombre_usuario = nombre;
+      }
     }
 
     if (this.user.role === 'trabajador') {
@@ -236,6 +252,7 @@ export class NewTicketComponent implements OnInit {
       const newTicket: CreateTicket = {
         user_id: this.user!.user_id,
         nombre_usuario: this.ticket.nombre_usuario!,
+        dni: this.ticket.dni!,
         asunto: this.ticket.asunto!,
         descripcion: this.ticket.descripcion!,
         priority: this.ticket.priority!,
@@ -279,7 +296,8 @@ export class NewTicketComponent implements OnInit {
       this.ticket.descripcion &&
       this.ticket.priority &&
       this.ticket.area_destino &&
-      this.ticket.tipo_problema_id
+      this.ticket.tipo_problema_id &&
+      this.ticket.dni
     );
   }
 
@@ -287,6 +305,52 @@ export class NewTicketComponent implements OnInit {
     this.router.navigate(['/panel-user']);
   }
 
+  onDniChange(dni: string) {
+    if (/^\d{8}$/.test(dni)) {
+      const dnicurrent = localStorage.getItem('userDNI');
+      if(dnicurrent && dni == dnicurrent){
+        return;
+      }
+      this.buscarNombrePorDni(dni);
+      localStorage.setItem('userDNI', dni);
+      
+    } else {
+      this.ticket.nombre_usuario = ''; // Limpia si el DNI no es válido
+    }
+  }
 
+  async buscarNombrePorDni(dni: string) {
+    try {
+      const response = await fetch('https://datospersonas.erpccd.com/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ numdni: dni })
+      });
+
+      const data = await response.json();
+
+      if (data.estado === 'ok' && data.dataJson?.persona?.preNombres) {
+        this.ticket.nombre_usuario = data.dataJson.persona.preNombres;
+        localStorage.setItem('userNombre', data.dataJson.persona.preNombres)
+      } else {
+        this.ticket.nombre_usuario = '';
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'No encontrado',
+          detail: 'No se encontró información para el DNI ingresado.'
+        });
+      }
+    } catch (error) {
+      console.error('Error al buscar el nombre por DNI', error);
+      this.ticket.nombre_usuario = '';
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo consultar el DNI.'
+      });
+    }
+  }
 
 }

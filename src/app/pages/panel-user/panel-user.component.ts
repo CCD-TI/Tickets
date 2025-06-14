@@ -144,6 +144,7 @@ export class PanelUserComponent {
   private async loadTickets() {
     try {
       const userId = this.user()?.user_id;
+      console.log(this.user())
       if (!userId) {
         throw new Error('No se encontró el ID del usuario');
       }

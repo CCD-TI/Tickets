@@ -8,21 +8,31 @@ export const authGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) =>
   const router = inject(Router);
 
   try {
-    const user = authService.userState();
-    if (!user) {
-      console.log('AuthGuard: No autenticado, redirigiendo a login');
-      return router.createUrlTree(['/login']);
+    const mail = localStorage.getItem('userEmail');
+    const dni = localStorage.getItem('userDNI');
+
+    let userRole: string | null = null;
+
+    if (mail && dni) {
+      userRole = 'user';
+    } else {
+      console.log("session actual: ", (await authService.getSession()).data.session)
+
+      const user = await authService.getCurrentUser();
+      console.log("estas en el guard: ", user);
+      if (!user) {
+        console.log('AuthGuard: No autenticado, redirigiendo a login');
+        return router.createUrlTree(['/login']);
+      }
+      userRole = user.role;
     }
 
-    const allowedRoles = route.data['role'] as string[];
-    if (allowedRoles && allowedRoles.includes(user.role)) {
-      console.log(`AuthGuard: Acceso permitido para rol ${user.role}`);
+    const allowedRoles = route.data['role'] as string[] | undefined;
+    if (!allowedRoles || allowedRoles.includes(userRole)) {
+      console.log(`AuthGuard: Acceso permitido para rol ${userRole}`);
       return true;
     }
-
-    console.log(`AuthGuard: Rol ${user.role} no permitido, redirigiendo`);
-    // Redirigir según el rol si no tiene acceso
-    switch (user.role) {
+    switch (userRole) {
       case 'user':
         return router.createUrlTree(['/panel-user']);
       case 'trabajador':

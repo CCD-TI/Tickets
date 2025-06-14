@@ -23,6 +23,17 @@
     <div class="bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 sm:p-6">
       <form (ngSubmit)="submitTicket()" class="space-y-6">
 
+        <!--EN CASO SER USUARIO TENER DNI-->
+      @if(user?.role == 'user') {
+        <div>
+          <label for="dni" class="block text-sm font-medium text-gray-300 mb-1">DNI *</label>
+          <input type="text" id="dni" [(ngModel)]="ticket.dni" name="dni"
+            class="w-full h-12 px-4 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg"
+            required pattern="^[0-9]{8}$" maxlength="8" title="El DNI debe tener exactamente 8 dígitos numéricos"
+            (ngModelChange)="onDniChange($event)">
+        </div>
+      }
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <!-- Nombre (siempre visible) -->
           <div>

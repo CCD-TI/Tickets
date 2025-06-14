@@ -25,7 +25,33 @@ export class AuthService {
 
   private async initializeAuth() {
     this.isLoading.set(true);
-    await this.getCurrentUser();
+    /**
+     *     
+    const mail = localStorage.getItem('userEmail');
+    const dni = localStorage.getItem('userDNI');
+
+    if (mail && dni) {
+      this.userState.set({
+        user_id: dni,
+        role: 'user',
+        area_id: 0
+      });
+      this.isLoading.set(false);
+      return;
+    }
+
+     * 
+     */
+
+    const currentUser = await this.getCurrentUser();
+    console.log("INICIALISADOR DE AUTH");
+    console.log("current user", currentUser);
+    if (currentUser) {
+      this.userState.set(currentUser);
+      this.isLoading.set(false);
+      return;
+    }
+
     this.isLoading.set(false);
 
     this.supabaseService.supabase.auth.onAuthStateChange((event, session) => {
@@ -51,14 +77,27 @@ export class AuthService {
       console.log('Iniciando sesión con Google', window.location.origin);
       const { error } = await this.supabaseService.supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
+        options: { redirectTo: window.location.origin }
       });
-      if (error) {
-        this.handleError(error, 'No se pudo iniciar sesión con Google');
-      }
+      if (error) this.handleError(error, 'No se pudo iniciar sesión con Google');
     } catch (error) {
+      this.handleError(error, 'Error al iniciar sesión');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async loginwithEmail(email: string, password: string){
+    try{
+      this.isLoading.set(true);
+      const { error } = await this.supabaseService.supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: "http://localhost:4200/",
+        },
+      })
+    }catch (error) {
       this.handleError(error, 'Error al iniciar sesión');
     } finally {
       this.isLoading.set(false);
@@ -69,10 +108,12 @@ export class AuthService {
     try {
       this.isLoading.set(true);
       const { error } = await this.supabaseService.supabase.auth.signOut();
-      if (error) {
-        this.handleError(error, 'No se pudo cerrar sesión');
-      }
+      if (error) this.handleError(error, 'No se pudo cerrar sesión');
       this.userState.set(null);
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userDNI');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userNombre');
     } catch (error) {
       this.handleError(error, 'Error al cerrar sesión');
     } finally {
@@ -84,18 +125,43 @@ export class AuthService {
     try {
       this.isLoading.set(true);
       const { data, error } = await this.supabaseService.supabase.auth.getUser();
-      if (error) {
-        console.warn('Get user error:', error.message);
+
+      if(error){
+        console.warn("Get user error: ", error.message);
         return null;
       }
-      const userId = data.user?.id;
-      if (!userId) {
-        console.warn('No user ID found');
+
+      /*
+      if (!error && data.user?.id) {
+        // Guardar correo local
+        const email = data.user.email || ""
+        if (email) localStorage.setItem('userEmail', email);
+        return await this.getUserData(data.user.id);
+      }
+
+      const mail = localStorage.getItem('userEmail');
+      const dni = localStorage.getItem('userDNI');
+      if (mail && dni) {
+        const tempUser: UserState = {
+          user_id: dni,
+          role: 'user',
+          area_id: 0
+        };
+        this.userState.set(tempUser);
+        return tempUser;
+      }
+
+      this.userState.set(null);
+      */ 
+      if(!data.user){
+        console.warn("No user ID found: ");
         return null;
       }
-      return await this.getUserData(userId);
+
+      return this.getUserData(data.user.id);
     } catch (error) {
       console.warn('Get current user failed:', error);
+      this.userState.set(null);
       return null;
     } finally {
       this.isLoading.set(false);
@@ -104,26 +170,29 @@ export class AuthService {
 
   async getUserData(userId: string): Promise<UserState | null> {
     try {
+      if(this.userState() !== null){
+        return this.userState();
+      }
       const { data, error } = await this.supabaseService.supabase
         .from('user_roles')
         .select('role, area_id')
         .eq('user_id', userId)
         .single();
+
       if (error) {
-        console.warn('Get user data error:', error.message);
         this.handleError(error, 'No se pudo obtener los datos del usuario');
         return null;
       }
+
       const userData: UserState = {
         user_id: userId,
         role: data.role,
         area_id: data.area_id
       };
+      
       this.userState.set(userData);
-      console.log('User state updated:', userData);
       return userData;
     } catch (error) {
-      console.warn('Get user data failed:', error);
       this.handleError(error, 'No se pudo obtener los datos del usuario');
       return null;
     }
@@ -133,7 +202,7 @@ export class AuthService {
     const user = await this.getCurrentUser();
     return {
       estado: !!user,
-      rol: user ? user.role : null
+      rol: user?.role ?? null
     };
   }
 
@@ -141,25 +210,35 @@ export class AuthService {
     return this.supabaseService.supabase.auth.getSession();
   }
 
-  async redirectBasedOnRole(): Promise<void> {
-    const user = await this.getCurrentUser();
-    if (!user) {
-      this.router.navigate(['/login']);
+  async redirectBasedOnRole(forceUserRole = false) {
+    if (forceUserRole) {
+      const role = 'user';
+      localStorage.setItem('userRole', role);
+      await this.router.navigate(['/panel-user']);
       return;
     }
-    switch (user.role) {
+    
+    const user = await this.getCurrentUser();
+    if (!user) {
+      console.warn('No se pudo obtener usuario para redirección');
+      return;
+    }
+
+    const role = user.role;
+    localStorage.setItem('userRole', role);
+
+    switch (role) {
       case 'user':
-        this.router.navigate(['/panel-user']);
+        await this.router.navigate(['/panel-user']);
         break;
       case 'trabajador':
-        this.router.navigate(['/panel-worker']);
+        await this.router.navigate(['/panel-worker']);
         break;
       case 'admin':
-        this.router.navigate(['/panel-admin']);
+        await this.router.navigate(['/panel-admin']);
         break;
       default:
-        this.router.navigate(['/login']);
+        await this.router.navigate(['/login']);
     }
   }
-
 }

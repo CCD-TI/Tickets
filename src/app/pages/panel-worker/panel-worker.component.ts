@@ -113,6 +113,11 @@ export class PanelWorkerComponent {
     }
   }
 
+  setTicketWithEvent(event: Event) {
+    const filter = (event.target as HTMLSelectElement).value;
+    this.setTicketFilter(filter as 'my' | 'area' | 'quejas');
+  }
+
   private async loadTickets() {
     try {
       const userId = this.user()?.user_id;

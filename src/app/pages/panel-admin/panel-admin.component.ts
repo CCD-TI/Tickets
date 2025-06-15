@@ -26,6 +26,7 @@ export class PanelAdminComponent {
   private initialized = false;
 
   mobileMenuOpen = signal(false);
+  windowWidth = signal(window.innerWidth);
   areaUser = signal('')
   searchTerm = signal('');
   selectedTicket = signal<Ticket | null>(null);
@@ -307,5 +308,10 @@ export class PanelAdminComponent {
         detail: error.message || 'No se pudo enviar la respuesta'
       });
     }
+  }
+
+  setTicketFilterWithEvent(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.setTicketFilter(target.value as 'my' | 'area' | 'quejas');
   }
 }

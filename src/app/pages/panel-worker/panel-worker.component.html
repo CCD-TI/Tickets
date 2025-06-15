@@ -4,12 +4,12 @@
     <!-- Mobile Header -->
     <div class="md:hidden flex justify-between mb-6">
       <div class="flex gap-3">
-        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="p-2 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white">
+        <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="p-2 flex items-center justify-center rounded-full hover:bg-gray-700 text-gray-400 hover:text-white">
           <i class="pi {{ mobileMenuOpen() ? 'pi-times' : 'pi-bars' }}"></i>
         </button>
         <img class="w-8 h-8" src="/faviconCCD.ico" alt="Logo" />
       </div>
-      <button (click)="navigateToCreateTicket()" class="flex gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-lg">
+      <button (click)="navigateToCreateTicket()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-lg">
         <i class="pi pi-plus"></i> Nuevo
       </button>
     </div>
@@ -24,9 +24,6 @@
         </div>
       </div>
       <div class="flex flex-col sm:flex-row gap-3">
-        <button (click)="navigateToCreateTicket()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
-          <i class="pi pi-plus"></i> Nuevo Ticket
-        </button>
         <button (click)="logout()" class="flex items-center gap-2 border border-gray-500 hover:border-gray-400 text-white py-2 px-6 rounded-lg">
           <i class="pi pi-sign-out"></i> Cerrar Sesión
         </button>
@@ -68,28 +65,40 @@
 </div>
   
     <!-- Ticket Filter Toggle -->
-     <div class="flex justify-between">
-       <div class="bg-gray-800 border border-gray-700 rounded-xl mb-6 p-1 inline-flex">
-         @if (user()?.role === 'trabajador') {
-           <button (click)="setTicketFilter('area')" 
-             class="px-4 py-1 rounded-lg {{ ticketFilter() === 'area' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
-             Tickets del Área
-           </button>
-         }
-         <button (click)="setTicketFilter('my')"
-           class="px-4 py-1 rounded-lg {{ ticketFilter() === 'my' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
-           Mis Tickets
-         </button>
-         @if (user()?.role === 'trabajador' && (areaUser() == 'Académico' || areaUser() == 'TI')) {
-           <button (click)="setTicketFilter('quejas')" 
-             class="px-4 py-1 rounded-lg {{ ticketFilter() === 'quejas' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
-             Quejas
-           </button>
-         }
-       </div>
-       <div>
+     <div class="flex justify-between items-center mb-6">
+      <div class="flex justify-center">
+        <div class="block md:hidden w-full max-w-xs">
+          <select (change)="setTicketWithEvent($event)" class="bg-gray-700 border border-gray-700 rounded-xl p-2">
+            <option value="area">Tickets del Área</option>
+            <option value="my">Mis Tickets</option>
+            @if (user()?.role === 'trabajador' && (areaUser() == 'Académico' || areaUser() == 'TI')) {
+              <option value="quejas">Quejas</option>
+            }
+          </select>
+        </div>
+
+        <div class="hidden md:block bg-gray-800 border border-gray-700 rounded-xl p-1">
+          <button (click)="setTicketFilter('area')" 
+            class="px-4 py-1 rounded-lg {{ ticketFilter() === 'area' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+            Tickets del Área
+          </button>
+          <button (click)="setTicketFilter('my')"
+            class="px-4 py-1 rounded-lg {{ ticketFilter() === 'my' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+            Mis Tickets
+          </button>
+          @if (user()?.role === 'trabajador' && (areaUser() == 'Académico' || areaUser() == 'TI')) {
+            <button (click)="setTicketFilter('quejas')" 
+              class="px-4 py-1 rounded-lg {{ ticketFilter() === 'quejas' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+              Quejas
+            </button>
+          }
+        </div>
+      </div>
+
+       <div class="flex">
         <button (click)="showFilters.set(!showFilters())" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
-          <i class="pi pi-filter"></i> Filtros
+          <i class="pi pi-filter"></i> 
+          <span class="hidden sm:inline">Filtros</span>
         </button>
        </div>
      </div>

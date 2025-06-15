@@ -31,7 +31,7 @@ export const routes: Routes = [
     path: 'new-ticket',
     component: NewTicketComponent,
     canActivate: [authGuard],
-    data: { role: ['user', 'trabajador'] }
+    data: { role: ['user', 'trabajador', 'admin'] }
   },
   { path: '**', redirectTo: 'login' }
 ];

@@ -49,32 +49,32 @@
             <select id="priority" [(ngModel)]="ticket.priority" name="priority"
               class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg" required>
               <option value="" disabled selected>Seleccionar prioridad</option>
-              <option *ngFor="let option of priorityOptions" [value]="option.value">{{option.label}}</option>
+              <option *ngFor="let option of prioridad" [value]="option.value">{{option.label}}</option>
             </select>
-          </div>
+          </div>  
           }
 
           <!-- Área Destino (solo para trabajadores) -->
-          @if(user?.role === 'trabajador') {
+          @if(user?.role === 'trabajador' || user?.role === 'admin') {
           <div>
             <label for="area" class="block text-sm font-medium text-gray-300 mb-1">Área Destino *</label>
             <select id="area" [(ngModel)]="ticket.area_destino" name="area_destino"
               class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg" required>
               <option value="" disabled selected>Seleccionar área</option>
-              <option *ngFor="let option of areas" [value]="option.value">{{option.label}}</option>
+              <option *ngFor="let option of area" [value]="option.value">{{option.label}}</option>
             </select>
           </div>
           }
 
           <!-- Proyecto (solo para trabajadores) -->
-          @if(user?.role === 'trabajador') {
+          @if(user?.role === 'trabajador' || user?.role === 'admin') {
           <div>
             <label for="proyecto" class="block text-sm font-medium text-gray-300 mb-1">Proyecto *</label>
             <select id="proyecto" [(ngModel)]="ticket.proyecto_id" name="proyecto_id"
               class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg" required>
               <option value="" selected>Seleccionar proyecto</option>
-              <option *ngFor="let option of proyectos" [value]="option.value">{{option.label}}</option>
-            </select>
+              <option *ngFor="let option of proyecto" [value]="option.value">{{option.label}}</option>
+            </select> 
           </div>
           }
 
@@ -85,7 +85,7 @@
               class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 transition-colors"
               required>
               <option value="" disabled selected>Seleccionar tipo de problema</option>
-              <option *ngFor="let option of tiposProblema" [value]="option.value">{{option.label}}</option>
+              <option *ngFor="let option of tipoProblema" [value]="option.value">{{option.label}}</option>
             </select>
           </div>
         </div>

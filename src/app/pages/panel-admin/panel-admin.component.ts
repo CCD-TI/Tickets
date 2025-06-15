@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, UserState } from '../../services/auth.service';
 import { TicketsService } from '../../services/tickets.service';
@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
 import { TicketCardComponent } from "../../components/ticket-card/ticket-card.component";
+import { areaOptions, priorityOptions, proyectoOptions, statusOptions, tipoProblemaOptions } from '../../utils/data';
 
 @Component({
   selector: 'app-panel-admin',
@@ -30,6 +31,7 @@ export class PanelAdminComponent {
   selectedTicket = signal<Ticket | null>(null);
   modalActive = signal(false);
   selectedPriority = signal<string | null>(null);
+  selectedProyecto = signal<string | null>(null);
   selectedStatus = signal<string | null>(null);
   user = signal<UserState | null>(null);
   ticketFilter = signal<'my' | 'area' | 'quejas'>('area');
@@ -42,17 +44,11 @@ export class PanelAdminComponent {
     resolved: 0
   });
 
-  priorityOptions = [
-    { label: 'Baja', value: 'low' },
-    { label: 'Media', value: 'medium' },
-    { label: 'Alta', value: 'high' }
-  ];
-
-  statusOptions = [
-    { label: 'Pendiente', value: 'open' },
-    { label: 'En Progreso', value: 'in_progress' },
-    { label: 'Resuelto', value: 'closed' }
-  ];
+  priorityOptions = priorityOptions;
+  statusOptions = statusOptions;
+  tipoProblemaOptions = tipoProblemaOptions;
+  proyectoOptions = proyectoOptions;
+  areaOptions = areaOptions;
 
   filteredTickets = computed(() => {
     let tickets = this.ticketsService.tickets() || [];
@@ -69,6 +65,9 @@ export class PanelAdminComponent {
     if (this.selectedStatus()) {
       tickets = tickets.filter(ticket => ticket.status === this.selectedStatus());
     }
+    if (this.selectedProyecto()) {
+      tickets = tickets.filter(ticket => ticket.proyecto_id === this.selectedProyecto());
+    }
     return tickets;
   });
 
@@ -78,7 +77,7 @@ export class PanelAdminComponent {
       if (user && !this.initialized) {
         this.initialized = true;
         this.user.set(user);
-        this.areaUser.set((await this.ticketsService.getAreas())?.find(a => a.id === user.area_id)?.nombre || '');
+        this.areaUser.set(areaOptions?.find(a => a.value === user.area_id.toString())?.label || '');
         this.loadInitialTickets();
       } else if (!user && !this.authService.isLoading()) {
         this.router.navigate(['/login']);
@@ -140,11 +139,7 @@ export class PanelAdminComponent {
 
   private async loadAreaTickets() {
     try {
-      const areaId = this.user()?.area_id;
-      if (!areaId) {
-        throw new Error('No se encontró el ID del área del usuario');
-      }
-      await this.ticketsService.getTicketsByArea(areaId);
+      await this.ticketsService.getAllTicketsArea();
     } catch (error: any) {
       this.messageService.add({
         severity: 'error',
@@ -242,6 +237,11 @@ export class PanelAdminComponent {
     this.selectedPriority.set(input.value || null);
   }
 
+  onProyectoChange(event: Event): void {
+    const input = event.target as HTMLSelectElement;
+    this.selectedProyecto.set(input.value || null);
+  }
+
   onStatusChange(event: Event): void {
     const input = event.target as HTMLSelectElement;
     this.selectedStatus.set(input.value || null);
@@ -254,7 +254,7 @@ export class PanelAdminComponent {
     if (!ticket || !user) return false;
 
     // Solo trabajadores pueden responder
-    if (user.role !== 'trabajador') return false;
+    if (user.role === 'user' ) return false;
 
     // Solo a tickets de su área
     //if (ticket.area_id?.id !== user.area_id) return false;

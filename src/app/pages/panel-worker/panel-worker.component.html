@@ -183,10 +183,17 @@
               <p class="text-sm text-gray-400 mb-1">Usuario</p>
               <p class="text-white font-medium">{{ selectedTicket()?.nombre_usuario || 'N/A' }}</p>
             </div>
+            @if(ticketFilter() !== 'quejas') {
             <div>
               <p class="text-sm text-gray-400 mb-1">Área Origen</p>
               <p class="text-white font-medium">{{ selectedTicket()?.area_origen?.nombre || 'Cliente' }}</p>
             </div>
+            }@else{
+              <div>
+                <p class="text-sm text-gray-400 mb-1">DNI</p>
+                <p class="text-white font-medium">{{ selectedTicket()?.dni || 'Cliente' }}</p>
+              </div>
+            }
             <div>
               <p class="text-sm text-gray-400 mb-1">Área Destino</p>
               <p class="text-white font-medium">{{ selectedTicket()?.area_destino?.nombre || 'N/A' }}</p>

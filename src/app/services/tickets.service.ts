@@ -9,14 +9,11 @@ import { AID, CreateTicket, Ticket, TicketResponse } from '../models/tickets';
 export class TicketsService {
   private supabaseService = inject(SupabaseService);
   tickets = signal<Ticket[] | null>(null);
-  areas = signal<AID[] | null>(null);
-  proyectos = signal<AID[] | null>(null);
-  tiposProblema = signal<AID[] | null>(null);
   ticketResponses = signal<Record<string, TicketResponse[]> | null>(null);
 
   private async fetchTickets(
-    filter?: { key: string; value: string },
-    excludeNullAreaOrigen: boolean = false
+    excludeNullAreaOrigen: boolean = false,
+    filter?: { key: string; value: string }
   ): Promise<Ticket[] | null> {
     const query = this.supabaseService.supabase
       .from('tickets')
@@ -64,15 +61,20 @@ export class TicketsService {
   }
 
   async getTicketsByUser(userId: string): Promise<Ticket[] | null> {
-    return this.fetchTickets({ key: 'user_id', value: userId });
+    return this.fetchTickets(false, { key: 'user_id', value: userId });
   }
 
   async getTicketsByArea(areaId: number): Promise<Ticket[] | null> {
-    return this.fetchTickets({ key: 'area_destino', value: areaId.toString() }, true);
+    return this.fetchTickets(true, { key: 'area_destino', value: areaId.toString() });
   }
 
   async getTicketsByProyecto(proyectoId: number): Promise<Ticket[] | null> {
-    return this.fetchTickets({ key: 'proyecto_id', value: proyectoId.toString() });
+    return this.fetchTickets(false, { key: 'proyecto_id', value: proyectoId.toString() });
+  }
+
+  //Trae todos los tickets que no tengan area_origen, ya que esos son las quejas
+  async getAllTicketsArea(): Promise<Ticket[] | null> {
+    return this.fetchTickets(true);
   }
 
   async getTicketsQuejas(): Promise<Ticket[] | null> {
@@ -166,42 +168,6 @@ export class TicketsService {
     );
   }
 
-  async getAreas(): Promise<AID[] | null> {
-    if (this.areas()) {
-      return this.areas();
-    }
-    const { data, error } = await this.supabaseService.supabase.from('areas').select('*');
-    if (error) {
-      throw new Error(`Error fetching areas: ${error.message}`);
-    }
-    this.areas.set(data);
-    return data;
-  }
-
-  async getProyectos(): Promise<AID[] | null> {
-    if (this.proyectos()) {
-      return this.proyectos();
-    }
-    const { data, error } = await this.supabaseService.supabase.from('proyectos').select('*');
-    if (error) {
-      throw new Error(`Error fetching proyectos: ${error.message}`);
-    }
-    this.proyectos.set(data);
-    return data;
-  }
-
-  async getTiposProblema(): Promise<AID[] | null> {
-    if (this.tiposProblema()) {
-      return this.tiposProblema();
-    }
-    const { data, error } = await this.supabaseService.supabase.from('tipos_problema').select('*');
-    if (error) {
-      throw new Error(`Error fetching tipos_problema: ${error.message}`);
-    }
-    this.tiposProblema.set(data);
-    return data;
-  }
-
   async getTicketResponses(ticketId: string): Promise<TicketResponse[] | null> {
     const { data, error } = await this.supabaseService.supabase
       .from('ticket_responses')
@@ -218,12 +184,6 @@ export class TicketsService {
     return data;
   }
 
-  cargarData(): void {
-    this.getAreas();
-    this.getProyectos();
-    this.getTiposProblema();
-  }
-
   markTicketAsViewed(ticketId: string): void {
     this.tickets.update(tickets =>
       tickets ? tickets.map(t => (t.id === ticketId ? { ...t, hasNewResponse: false } : t)) : tickets
@@ -233,9 +193,6 @@ export class TicketsService {
   clearCache(): void {
     this.tickets.set(null);
     this.ticketResponses.set(null);
-    this.areas.set(null);
-    this.proyectos.set(null);
-    this.tiposProblema.set(null);
   }
 
   async addTicketResponse(ticketId: string, message: string): Promise<TicketResponse | null> {
@@ -299,6 +256,22 @@ export class TicketsService {
       .single();
     if (error) {
       throw new Error(`Error updating ticket priority: ${error.message}`);
+    }
+    const updatedTicket = data as Ticket;
+    this.tickets.update(tickets =>
+      tickets ? tickets.map(t => (t.id === ticketId ? updatedTicket : t)) : tickets
+    );
+  }
+
+  async updateAreaDestino(ticketId: string, areaDestino: string): Promise<void> {
+    const { data, error } = await this.supabaseService.supabase
+      .from('tickets')
+      .update({ area_destino: areaDestino })
+      .eq('id', ticketId)
+      .select()
+      .single();
+    if (error) {
+      throw new Error(`Error updating ticket area_destino: ${error.message}`);
     }
     const updatedTicket = data as Ticket;
     this.tickets.update(tickets =>

@@ -20,6 +20,7 @@ import { ElementRef } from '@angular/core';
 import { UploadResponse, UploadService } from '../../services/upload.service';
 import { Observable } from 'rxjs';
 import { ApiResponse, FileModel, Folder } from '../../models/upload';
+import { areaOptions, priorityOptions, proyectoOptions, statusOptions, tipoProblemaOptions } from '../../utils/data';
 
 @Component({
   selector: 'app-new-ticket',
@@ -58,17 +59,14 @@ export class NewTicketComponent implements OnInit {
     tipo_problema_id: 0,
   };
   user: UserState | null = null;
-  areas: { label: string; value: number }[] = [];
-  proyectos: { label: string; value: number }[] = [];
-  tiposProblema: { label: string; value: number }[] = [];
   uploadedFiles: { url: string, key: string }[] = [];
   isUploading = false;
   @ViewChild('fileInput') fileInput!: ElementRef;
-  priorityOptions = [
-    { label: 'Baja', value: 'low' },
-    { label: 'Media', value: 'medium' },
-    { label: 'Alta', value: 'high' }
-  ];
+  area = areaOptions;
+  proyecto = proyectoOptions;
+  tipoProblema = tipoProblemaOptions;
+  prioridad = priorityOptions;
+  estado = statusOptions;
 
   ngOnInit() {
     this.user = this.authService.userState();
@@ -105,7 +103,7 @@ export class NewTicketComponent implements OnInit {
       this.ticket.area_origen = this.user.area_id; // Área académica
     }
 
-    this.loadDropdownOptions();
+    // this.loadDropdownOptions();
   }
 
   get showPriorityField(): boolean {
@@ -124,24 +122,23 @@ export class NewTicketComponent implements OnInit {
     return this.user?.role !== 'user';
   }
 
-  async loadDropdownOptions() {
-    try {
-      const areas = await this.ticketsService.getAreas();
-      this.areas = areas?.map(area => ({ label: area.nombre, value: area.id })) || [];
+  // async loadDropdownOptions() {
+  //   try {
+  //     this.areas = areas?.map(area => ({ label: area.nombre, value: area.id })) || [];
 
-      const proyectos = await this.ticketsService.getProyectos();
-      this.proyectos = proyectos?.map(proyecto => ({ label: proyecto.nombre, value: proyecto.id })) || [];
+  //     const proyectos = await this.ticketsService.getProyectos();
+  //     this.proyectos = proyectos?.map(proyecto => ({ label: proyecto.nombre, value: proyecto.id })) || [];
 
-      const tiposProblema = await this.ticketsService.getTiposProblema();
-      this.tiposProblema = tiposProblema?.map(tipo => ({ label: tipo.nombre, value: tipo.id })) || [];
-    } catch (error: any) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudieron cargar las opciones del formulario.'
-      });
-    }
-  }
+  //     const tiposProblema = await this.ticketsService.getTiposProblema();
+  //     this.tiposProblema = tiposProblema?.map(tipo => ({ label: tipo.nombre, value: tipo.id })) || [];
+  //   } catch (error: any) {
+  //     this.messageService.add({
+  //       severity: 'error',
+  //       summary: 'Error',
+  //       detail: 'No se pudieron cargar las opciones del formulario.'
+  //     });
+  //   }
+  // }
 
   async onFileSelect(event: any) {
     const files = event.target.files;

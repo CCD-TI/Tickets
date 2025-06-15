@@ -1,5 +1,5 @@
 import { Component, effect, input, output, signal } from '@angular/core';
-import { Ticket } from '../../models/tickets';
+import { AID, Ticket } from '../../models/tickets';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
@@ -11,6 +11,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { DialogModule } from 'primeng/dialog';
 import { UserState } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
+import { areaOptions, priorityOptions, statusOptions } from '../../utils/data';
 
 @Component({
   selector: 'app-ticket-card',
@@ -32,18 +33,9 @@ export class TicketCardComponent {
   showStatus = signal(false);
   responseMessage = '';
   showResponseForm = signal(false);
-
-  priorityOptions = [
-    { label: 'Baja', value: 'low' },
-    { label: 'Media', value: 'medium' },
-    { label: 'Alta', value: 'high' }
-  ];
-
-  statusOptions = [
-    { label: 'Pendiente', value: 'open' },
-    { label: 'En Progreso', value: 'in_progress' },
-    { label: 'Resuelto', value: 'closed' }
-  ];
+  areas = areaOptions;
+  statusOptions = statusOptions;
+  priorityOptions = priorityOptions;
 
   constructor(
     private ticketsService: TicketsService,
@@ -121,6 +113,25 @@ export class TicketCardComponent {
         severity: 'error',
         summary: 'Error',
         detail: 'No se pudo enviar la respuesta'
+      });
+    }
+  }
+
+  async updateAreaDestino(event: any) {
+    if (!this.ticket()) return;
+    try {
+      await this.ticketsService.updateAreaDestino(this.ticket()?.id || '', event.target.value);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Éxito',
+        detail: 'Área actualizada correctamente'
+      });
+      this.showActionsDropdown.set(false);
+    } catch (error) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo actualizar el área'
       });
     }
   }

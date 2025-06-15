@@ -118,6 +118,15 @@
                 <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
+
+              <label class="block text-xs text-gray-400 mb-1">Cambiar área</label>
+              <select [(ngModel)]="ticket()!.area_destino.id" (change)="updateAreaDestino($event)"
+                class="w-full bg-gray-700 border border-gray-600 text-white text-xs rounded-lg p-2">
+                @for(option of areas; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+                }
+                <option value="">Cliente</option>
+              </select>
             </div>
           </div>
           }

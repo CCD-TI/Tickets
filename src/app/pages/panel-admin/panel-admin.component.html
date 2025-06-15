@@ -20,7 +20,7 @@
         <img class="w-12 h-12 hidden md:block" src="/faviconCCD.ico" alt="Logo" />
         <div>
           <h1 class="text-2xl font-bold text-white">Gestión de Tickets</h1>
-          <p class="text-sm text-gray-400">Área: {{ areaUser() }}</p>
+          <p class="text-sm text-gray-400">Administrador: {{ user()?.role }}</p>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row gap-3">
@@ -70,22 +70,18 @@
     <!-- Ticket Filter Toggle -->
      <div class="flex justify-between">
        <div class="bg-gray-800 border border-gray-700 rounded-xl mb-6 p-1 inline-flex">
-         @if (user()?.role === 'trabajador') {
            <button (click)="setTicketFilter('area')" 
              class="px-4 py-1 rounded-lg {{ ticketFilter() === 'area' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
              Tickets del Área
            </button>
-         }
          <button (click)="setTicketFilter('my')"
            class="px-4 py-1 rounded-lg {{ ticketFilter() === 'my' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
            Mis Tickets
          </button>
-         @if (user()?.role === 'trabajador' && (areaUser() == 'Académico' || areaUser() == 'TI')) {
-           <button (click)="setTicketFilter('quejas')" 
-             class="px-4 py-1 rounded-lg {{ ticketFilter() === 'quejas' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
-             Quejas
-           </button>
-         }
+         <button (click)="setTicketFilter('quejas')" 
+           class="px-4 py-1 rounded-lg {{ ticketFilter() === 'quejas' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white' }}">
+           Quejas
+         </button>
        </div>
        <div>
         <button (click)="showFilters.set(!showFilters())" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
@@ -115,6 +111,14 @@
             </select>
           </div>
           <div>
+            <label for="proyecto-filter" class="text-sm text-gray-300 mb-1">Proyecto</label>
+            <select id="proyecto-filter" [value]="selectedProyecto() ?? ''" (change)="onProyectoChange($event)"
+              class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg">
+              <option value="">Todos los proyectos</option>
+              <option *ngFor="let option of proyectoOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+          <div>
             <label for="status-filter" class="text-sm text-gray-300 mb-1">Estado</label>
             <select id="status-filter" [value]="selectedStatus() ?? ''" (change)="onStatusChange($event)"
               class="w-full h-12 px-4 bg-gray-700 border border-gray-600 text-white rounded-lg">
@@ -129,8 +133,8 @@
     <!-- Tickets List -->
     <div class="space-y-4 flex flex-col gap-2">
       @for (ticket of filteredTickets(); track ticket.id) {
-        <app-ticket-card  [ticket]="ticket" [statusBadge]="getStatusBadge(ticket.status)" [priorityBadge]="getPriorityBadge(ticket.priority)"
-          (cardClicked)="openTicketDetail(ticket)" [user]="user()" [ticketFilter]="ticketFilter()"></app-ticket-card>
+        <app-ticket-card (cardClicked)="openTicketDetail(ticket)" [ticket]="ticket" [statusBadge]="getStatusBadge(ticket.status)" [priorityBadge]="getPriorityBadge(ticket.priority)"
+          [user]="user()" [ticketFilter]="ticketFilter()"></app-ticket-card>
       }
       @if (!filteredTickets().length) {
         <div class="bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">
@@ -183,10 +187,17 @@
               <p class="text-sm text-gray-400 mb-1">Usuario</p>
               <p class="text-white font-medium">{{ selectedTicket()?.nombre_usuario || 'N/A' }}</p>
             </div>
-            <div>
-              <p class="text-sm text-gray-400 mb-1">Área Origen</p>
-              <p class="text-white font-medium">{{ selectedTicket()?.area_origen?.nombre || 'Cliente' }}</p>
-            </div>
+            @if(ticketFilter() !== 'quejas') {
+                <div>
+                  <p class="text-sm text-gray-400 mb-1">Área Origen</p>
+                  <p class="text-white font-medium">{{ selectedTicket()?.area_origen?.nombre || 'Cliente' }}</p>
+                </div>
+                }@else{
+                  <div>
+                    <p class="text-sm text-gray-400 mb-1">DNI</p>
+                    <p class="text-white font-medium">{{ selectedTicket()?.dni || 'Cliente' }}</p>
+                  </div>
+                }
             <div>
               <p class="text-sm text-gray-400 mb-1">Área Destino</p>
               <p class="text-white font-medium">{{ selectedTicket()?.area_destino?.nombre || 'N/A' }}</p>

@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
+import { areaOptions, priorityOptions, statusOptions } from '../../utils/data';
 
 @Component({
   selector: 'app-panel-worker',
@@ -41,17 +42,8 @@ export class PanelWorkerComponent {
     resolved: 0
   });
 
-  priorityOptions = [
-    { label: 'Baja', value: 'low' },
-    { label: 'Media', value: 'medium' },
-    { label: 'Alta', value: 'high' }
-  ];
-
-  statusOptions = [
-    { label: 'Pendiente', value: 'open' },
-    { label: 'En Progreso', value: 'in_progress' },
-    { label: 'Resuelto', value: 'closed' }
-  ];
+  priorityOptions = priorityOptions;
+  statusOptions = statusOptions;
 
   filteredTickets = computed(() => {
     let tickets = this.ticketsService.tickets() || [];
@@ -77,7 +69,7 @@ export class PanelWorkerComponent {
       if (user && !this.initialized) {
         this.initialized = true;
         this.user.set(user);
-        this.areaUser.set((await this.ticketsService.getAreas())?.find(a => a.id === user.area_id)?.nombre || '');
+        this.areaUser.set(areaOptions?.find(a => a.value === user.area_id.toString())?.label || '');
         this.loadInitialTickets();
       } else if (!user && !this.authService.isLoading()) {
         this.router.navigate(['/login']);

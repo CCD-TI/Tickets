@@ -1,6 +1,7 @@
 export interface Ticket {
     id:               string;
     user_id:          string;
+    dni:              string;
     nombre_usuario:   string;
     asunto:           string;
     descripcion:      string;

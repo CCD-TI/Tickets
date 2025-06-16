@@ -16,6 +16,7 @@ import { SelectModule } from 'primeng/select';
 import { TicketCardComponent } from '../../components/ticket-card/ticket-card.component';
 import { ImageModule } from 'primeng/image';
 import { areaOptions, priorityOptions, statusOptions } from '../../utils/data';
+import { UploadService } from '../../services/upload.service';
 
 @Component({
   selector: 'app-panel-user',
@@ -42,6 +43,7 @@ export class PanelUserComponent {
   public ticketsService = inject(TicketsService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  private uploadService = inject(UploadService);
   private initialized = false;
 
   mobileMenuOpen = signal(false);
@@ -61,6 +63,9 @@ export class PanelUserComponent {
     inProgress: 0,
     resolved: 0
   });
+
+  uploadedFiles: { url: string, key: string }[] = [];
+  isUploading = false;
 
   priorityOptions = priorityOptions;
   statusOptions = statusOptions;
@@ -89,7 +94,7 @@ export class PanelUserComponent {
       if (user && !this.initialized) {
         this.initialized = true;
         this.user.set(user);
-        this.areaUser.set(areaOptions?.find(a => a.value === user.area_id.toString())?.label || '');
+        //this.areaUser.set(areaOptions?.find(a => a.value === user.area_id.toString())?.label || '');
         this.loadInitialTickets();
       } else if (!user && !this.authService.isLoading()) {
         this.router.navigate(['/login']);
@@ -285,7 +290,8 @@ export class PanelUserComponent {
     try {
       await this.ticketsService.addTicketResponse(
         this.selectedTicket()!.id,
-        this.responseMessage
+        this.responseMessage,
+        this.uploadedFiles.map(file => file.url)
       );
 
       // Actualizar el ticket localmente
@@ -298,6 +304,7 @@ export class PanelUserComponent {
             mensaje: this.responseMessage,
             user_id: this.user()!.user_id,
             ticket_id: this.selectedTicket()!.id,
+            image_urls: this.uploadedFiles.map(file => file.url),
             created_at: new Date()
           }
         ]
@@ -305,6 +312,7 @@ export class PanelUserComponent {
 
       this.selectedTicket.set(updatedTicket);
       this.responseMessage = '';
+      this.uploadedFiles = [];
 
       this.messageService.add({
         severity: 'success',
@@ -319,5 +327,56 @@ export class PanelUserComponent {
         detail: error.message || 'No se pudo enviar la respuesta'
       });
     }
+  }
+
+  async onFileSelect(event: any) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    this.isUploading = true;
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Archivo muy grande',
+            detail: 'El archivo excede el límite de 10MB'
+          });
+          continue;
+        }
+        await this.uploadImage(file);
+      }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Error al subir las imágenes'
+      });
+    } finally {
+      this.isUploading = false;
+      // Reset the input to allow selecting the same file again if needed
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  }
+
+  async uploadImage(file: File) {
+    const response = await this.uploadService.uploadImage(file).subscribe((response: { files: { url: string }[] }) => {
+      this.uploadedFiles.push({ url: response.files[0].url, key: response.files[0].url });
+    });
+
+    if (!response) {
+      throw new Error('Error al subir la imagen');
+    }
+
+  }
+
+  removeImage(index: number) {
+    this.uploadedFiles.splice(index, 1);
+    // Opcional: También podrías llamar a tu edge function para eliminar el archivo de R2
   }
 }

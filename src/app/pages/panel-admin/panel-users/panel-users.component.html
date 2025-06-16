@@ -1,0 +1,231 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 sm:p-6">
+    <div class="max-w-6xl mx-auto">
+      <!-- Column Selector (now in dropdown) -->
+      <div *ngIf="showColumnSelector()" class="mb-4 p-3 bg-gray-800 border border-gray-700 rounded-lg">
+        <div class="flex flex-wrap gap-3">
+          <label *ngFor="let col of cols()" class="flex items-center gap-2 text-sm text-gray-300">
+            <input 
+              type="checkbox" 
+              [checked]="col.visible"
+              (change)="toggleColumnVisibility(col.field)"
+              class="h-3.5 w-3.5 text-blue-500 focus:ring-blue-500 bg-gray-700 border-gray-600 rounded">
+            {{col.header}}
+          </label>
+        </div>
+      </div>
+  
+      <!-- Error Message -->
+      <div *ngIf="error()" class="mb-4 p-3 bg-red-600/20 border border-red-600 rounded-lg text-sm text-red-400">
+        {{error()}}
+      </div>
+  
+      <!-- Main Container -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden">
+        <!-- Collapsible Filters -->
+        <div class="border-b border-gray-700">
+          <button 
+            (click)="toggleFilters()"
+            class="w-full p-2 flex items-center justify-between text-gray-300 hover:bg-gray-700 transition-colors"
+            aria-label="Mostrar/ocultar filtros"
+            [attr.aria-expanded]="showFilters()">
+            <span class="text-sm font-medium">Filtros</span>
+            <svg 
+              class="h-4 w-4 transform transition-transform" 
+              [class.rotate-180]="showFilters()"
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <div *ngIf="showFilters()" class="p-3 bg-gray-750 grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="relative">
+              <label for="search" class="block text-xs text-gray-400 mb-1">Buscar</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input 
+                  id="search"
+                  type="text" 
+                  [ngModel]="searchText()"
+                  (ngModelChange)="searchText.set($event)"
+                  class="w-full pl-8 pr-2 py-1.5 text-sm bg-gray-700 border border-gray-600 rounded text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Buscar..."
+                  aria-label="Buscar usuarios">
+              </div>
+            </div>
+            
+            <div>
+              <label for="role" class="block text-xs text-gray-400 mb-1">Roles</label>
+              <select 
+                id="role"
+                [ngModel]="selectedRoles()"
+                (ngModelChange)="selectedRoles.set($event)"
+                class="w-full text-sm bg-gray-700 border border-gray-600 text-white rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                aria-label="Filtrar por roles">
+                <option value="">Todos</option>
+                <option *ngFor="let role of roleOptions" [value]="role.value">{{role.label}}</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="area" class="block text-xs text-gray-400 mb-1">Áreas</label>
+              <select 
+                id="area"
+                [ngModel]="selectedAreas()"
+                (ngModelChange)="onAreaChange($event)"
+                class="w-full text-sm bg-gray-700 border border-gray-600 text-white rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                aria-label="Filtrar por áreas">
+                <option value="">Todos</option>
+                <option *ngFor="let area of areaOptions" [value]="area.value">{{area.label}}</option>
+              </select>
+            </div>
+            <button (click)="showColumnSelector.set(!showColumnSelector())" class="bg-gray-700 hover:bg-gray-600 text-white px-6 rounded-lg">
+              Columnas
+            </button>
+          </div>
+        </div>
+  
+        <!-- Table -->
+        <div class="relative overflow-x-auto">
+          <div *ngIf="loading()" class="absolute inset-0 bg-gray-800/50 flex items-center justify-center z-10">
+            <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+          
+          <table class="min-w-full divide-y divide-gray-700 text-sm">
+            <thead class="bg-gray-700">
+              <tr>
+                <th *ngFor="let col of visibleColumns()" 
+                    scope="col" 
+                    class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer"
+                    (click)="toggleSort(col.field)"
+                    [attr.aria-sort]="sortField() === col.field ? (sortOrder() === 1 ? 'ascending' : 'descending') : 'none'">
+                  <div class="flex items-center justify-between">
+                    {{col.header}}
+                    <span *ngIf="sortField() === col.field" class="ml-1">
+                      <svg *ngIf="sortOrder() === 1" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                      </svg>
+                      <svg *ngIf="sortOrder() === -1" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  </div>
+                </th>
+                <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-gray-800 divide-y divide-gray-700">
+              <tr *ngFor="let user of paginatedUsers()" class="hover:bg-gray-700/50 transition-colors">
+                <td *ngFor="let col of visibleColumns()" class="px-4 py-2 whitespace-nowrap">
+                  <div *ngIf="col.field === 'role'" class="flex">
+                    <span [class]="'px-1.5 py-0.5 rounded-full text-xs font-medium ' + getRoleClass(user.role)">
+                      {{user.role | titlecase}}
+                    </span>
+                  </div>
+                  <div *ngIf="col.field === 'area'" class="text-gray-300">
+                    {{user.area}}
+                  </div>
+                  <div *ngIf="col.field !== 'role' && col.field !== 'area'" class="text-gray-300">
+                    {{user[col.field]}}
+                  </div>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap text-right">
+                  <div class="relative">
+                    <button 
+                      (click)="toggleActionsMenu(user.id)"
+                      class="text-gray-400 hover:text-white focus:outline-none rounded"
+                      aria-label="Acciones para el usuario"
+                      [attr.aria-expanded]="openActionsMenuId() === user.id"
+                      [attr.aria-controls]="'actions-menu-' + user.id">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                      </svg>
+                    </button>
+                    
+                    <!-- Actions Menu -->
+                    <div 
+                      *ngIf="openActionsMenuId() === user.id"
+                      [id]="'actions-menu-' + user.id"
+                      class="origin-top-right absolute right-0 mt-1 w-36 rounded-md shadow-lg bg-gray-700 ring-1 ring-gray-600 z-10">
+                      <div class="py-1">
+                        <button 
+                          (click)="editUser(user)"
+                          class="block px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-600 w-full text-left focus:outline-none"
+                          aria-label="Editar usuario">
+                          Editar
+                        </button>
+                        <button 
+                          (click)="deleteUser(user)"
+                          class="block px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-600 w-full text-left focus:outline-none"
+                          aria-label="Eliminar usuario">
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr *ngIf="!loading() && filteredUsers().length === 0">
+                <td [attr.colspan]="visibleColumns().length + 1" class="px-4 py-8 text-center">
+                  <div class="flex flex-col items-center justify-center text-gray-400">
+                    <svg class="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <p class="text-sm">No se encontraron usuarios</p>
+                    <p class="text-xs mt-0.5">Ajusta los filtros de búsqueda</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+  
+        <!-- Compact Pagination -->
+        <div class="bg-gray-700 px-3 py-2 flex items-center justify-between border-t border-gray-600">
+          <div class="flex-1 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400">
+                <span class="font-medium">{{first() + 1}}-{{Math.min(first() + rows(), totalRecords())}}</span> de 
+                <span class="font-medium">{{totalRecords()}}</span>
+              </p>
+            </div>
+            <div>
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Paginación">
+                <button 
+                  (click)="prevPage()" 
+                  [disabled]="first() === 0"
+                  class="relative inline-flex items-center px-2 py-1 border border-gray-600 bg-gray-700 text-xs text-gray-400 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Página anterior">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <span class="relative inline-flex items-center px-2 py-1 border border-gray-600 bg-gray-700 text-xs text-gray-300">
+                  {{currentPage() + 1}}/{{totalPages()}}
+                </span>
+                
+                <button 
+                  (click)="nextPage()" 
+                  [disabled]="first() + rows() >= totalRecords()"
+                  class="relative inline-flex items-center px-2 py-1 border border-gray-600 bg-gray-700 text-xs text-gray-400 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Página siguiente">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

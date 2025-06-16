@@ -45,3 +45,9 @@ export const areaOptions = [
     { label: 'Soporte', value: '6' },
 ];
 
+export const roleOptions = [
+    { label: 'Admin', value: 'admin' },
+    { label: 'Trabajador', value: 'trabajador' },
+    { label: 'Usuario', value: 'user' }
+]
+

@@ -265,7 +265,7 @@ export class NewTicketComponent implements OnInit {
       }
 
       // Solo para trabajadores
-      if (this.user?.role === 'trabajador') {
+      if (this.user?.role === 'trabajador' || this.user?.role === 'admin') {
         newTicket.area_origen = this.user.area_id;
         newTicket.area_destino = this.ticket.area_destino!;
         newTicket.proyecto_id = this.ticket.proyecto_id!;
@@ -294,7 +294,7 @@ export class NewTicketComponent implements OnInit {
       this.ticket.priority &&
       this.ticket.area_destino &&
       this.ticket.tipo_problema_id &&
-      this.ticket.dni
+      (this.user?.role === 'user' ? this.ticket.dni : true)
     );
   }
 

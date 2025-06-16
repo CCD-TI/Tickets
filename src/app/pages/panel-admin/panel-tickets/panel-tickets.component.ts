@@ -1,53 +1,58 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { AuthService, UserState } from '../../services/auth.service';
-import { TicketsService } from '../../services/tickets.service';
+import { Component, inject, signal, computed, effect } from '@angular/core';
+import { AuthService, UserState } from '../../../services/auth.service';
+import { TicketsService } from '../../../services/tickets.service';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
-import { Ticket } from '../../models/tickets';
-import { TicketCardComponent } from '../../components/ticket-card/ticket-card.component';
+import { Ticket } from '../../../models/tickets';
+import { areaOptions, priorityOptions, proyectoOptions, statusOptions, tipoProblemaOptions } from '../../../utils/data';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
-import { areaOptions, priorityOptions, statusOptions } from '../../utils/data';
-import { UploadService } from '../../services/upload.service';
+import { TicketCardComponent } from '../../../components/ticket-card/ticket-card.component';
+import { UploadService } from '../../../services/upload.service';
+import { TagModule } from 'primeng/tag';
 
 @Component({
-  selector: 'app-panel-worker',
-  templateUrl: './panel-worker.component.html',
-  styleUrl: './panel-worker.component.css',
-  imports: [ImageModule,TicketCardComponent, CommonModule, ToastModule, FormsModule]
+  selector: 'app-panel-tickets',
+  imports: [CommonModule, ToastModule, FormsModule, ImageModule, TicketCardComponent, TagModule],
+  templateUrl: './panel-tickets.component.html',
+  styleUrl: './panel-tickets.component.css'
 })
-export class PanelWorkerComponent {
+export class PanelTicketsComponent {
   private authService = inject(AuthService);
   public ticketsService = inject(TicketsService);
   private messageService = inject(MessageService);
   private router = inject(Router);
   private initialized = false;
-  uploadService = inject(UploadService);
+  private uploadService = inject(UploadService);
 
   mobileMenuOpen = signal(false);
+  windowWidth = signal(window.innerWidth);
   areaUser = signal('')
   searchTerm = signal('');
   selectedTicket = signal<Ticket | null>(null);
   modalActive = signal(false);
   selectedPriority = signal<string | null>(null);
+  selectedProyecto = signal<string | null>(null);
   selectedStatus = signal<string | null>(null);
   user = signal<UserState | null>(null);
   ticketFilter = signal<'my' | 'area' | 'quejas'>('area');
   showFilters = signal(false);
   responseMessage = '';
-  uploadedFiles: { url: string, key: string }[] = [];
-  isUploading = false;
   stats = signal({
     total: 0,
     pending: 0,
     inProgress: 0,
     resolved: 0
   });
-
+  uploadedFiles: { url: string, key: string }[] = [];
+  isUploading = false;
   priorityOptions = priorityOptions;
   statusOptions = statusOptions;
+  tipoProblemaOptions = tipoProblemaOptions;
+  proyectoOptions = proyectoOptions;
+  areaOptions = areaOptions;
 
   filteredTickets = computed(() => {
     let tickets = this.ticketsService.tickets() || [];
@@ -63,6 +68,9 @@ export class PanelWorkerComponent {
     }
     if (this.selectedStatus()) {
       tickets = tickets.filter(ticket => ticket.status === this.selectedStatus());
+    }
+    if (this.selectedProyecto()) {
+      tickets = tickets.filter(ticket => ticket.proyecto_id === this.selectedProyecto());
     }
     return tickets;
   });
@@ -100,13 +108,13 @@ export class PanelWorkerComponent {
       await this.loadAreaTickets();
     }
   }
-  
+
   setTicketFilter(filter: 'my' | 'area' | 'quejas') {
     this.ticketFilter.set(filter);
     this.selectedPriority.set(null);
     this.selectedStatus.set(null);
     this.searchTerm.set('');
-    
+
     // Cargar tickets solo cuando se cambia el filtro
     if (filter === 'my') {
       this.loadTickets();
@@ -115,11 +123,6 @@ export class PanelWorkerComponent {
     } else if (filter === 'quejas') {
       this.loadQuejasTickets();
     }
-  }
-
-  setTicketWithEvent(event: Event) {
-    const filter = (event.target as HTMLSelectElement).value;
-    this.setTicketFilter(filter as 'my' | 'area' | 'quejas');
   }
 
   private async loadTickets() {
@@ -140,11 +143,7 @@ export class PanelWorkerComponent {
 
   private async loadAreaTickets() {
     try {
-      const areaId = this.user()?.area_id;
-      if (!areaId) {
-        throw new Error('No se encontró el ID del área del usuario');
-      }
-      await this.ticketsService.getTicketsByArea(areaId);
+      await this.ticketsService.getAllTicketsArea();
     } catch (error: any) {
       this.messageService.add({
         severity: 'error',
@@ -242,6 +241,11 @@ export class PanelWorkerComponent {
     this.selectedPriority.set(input.value || null);
   }
 
+  onProyectoChange(event: Event): void {
+    const input = event.target as HTMLSelectElement;
+    this.selectedProyecto.set(input.value || null);
+  }
+
   onStatusChange(event: Event): void {
     const input = event.target as HTMLSelectElement;
     this.selectedStatus.set(input.value || null);
@@ -250,33 +254,33 @@ export class PanelWorkerComponent {
   canRespondToTicket(): boolean {
     const ticket = this.selectedTicket();
     const user = this.user();
-    
+
     if (!ticket || !user) return false;
-    
+
     // Solo trabajadores pueden responder
-    if (user.role !== 'trabajador') return false;
-    
+    if (user.role === 'user' ) return false;
+
     // Solo a tickets de su área
     //if (ticket.area_id?.id !== user.area_id) return false;
-    
+
     // Solo si el estado es "en progreso"
     if (ticket.status !== 'in_progress') return false;
-    
+
     return true;
   }
-  
+
   async submitResponse(event: Event) {
     event.preventDefault();
-    
+
     if (!this.selectedTicket()?.id || !this.responseMessage.trim()) return;
-    
+
     try {
       await this.ticketsService.addTicketResponse(
-        this.selectedTicket()!.id, 
+        this.selectedTicket()!.id,
         this.responseMessage,
         this.uploadedFiles.map(file => file.url)
       );
-      
+
       // Actualizar el ticket localmente
       const updatedTicket = {
         ...this.selectedTicket()!,
@@ -292,17 +296,17 @@ export class PanelWorkerComponent {
           }
         ]
       };
-      
+
       this.selectedTicket.set(updatedTicket);
-      this.responseMessage = '';
       this.uploadedFiles = [];
-      
+      this.responseMessage = '';
+
       this.messageService.add({
         severity: 'success',
         summary: 'Éxito',
         detail: 'Respuesta enviada correctamente'
       });
-      
+
     } catch (error: any) {
       this.messageService.add({
         severity: 'error',
@@ -310,6 +314,11 @@ export class PanelWorkerComponent {
         detail: error.message || 'No se pudo enviar la respuesta'
       });
     }
+  }
+
+  setTicketFilterWithEvent(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.setTicketFilter(target.value as 'my' | 'area' | 'quejas');
   }
 
   async onFileSelect(event: any) {

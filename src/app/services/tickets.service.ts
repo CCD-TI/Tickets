@@ -195,7 +195,7 @@ export class TicketsService {
     this.ticketResponses.set(null);
   }
 
-  async addTicketResponse(ticketId: string, message: string): Promise<TicketResponse | null> {
+  async addTicketResponse(ticketId: string, message: string, image_urls?: string[]): Promise<TicketResponse | null> {
     const userId = (await this.supabaseService.supabase.auth.getUser()).data.user?.id;
     if (!userId) {
       throw new Error('Usuario no autenticado.');
@@ -203,7 +203,7 @@ export class TicketsService {
   
     const { data, error } = await this.supabaseService.supabase
       .from('ticket_responses')
-      .insert([{ ticket_id: ticketId, user_id: userId, mensaje: message }])
+      .insert([{ ticket_id: ticketId, user_id: userId, mensaje: message, image_urls }])
       .select()
       .single();
   

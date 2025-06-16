@@ -42,5 +42,6 @@ export interface TicketResponse {
     mensaje:    string;
     user_id:    string;
     ticket_id:  string;
+    image_urls: string[];
     created_at: Date;
 }

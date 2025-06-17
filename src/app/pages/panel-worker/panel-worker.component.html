@@ -73,10 +73,9 @@
         <div class="block md:hidden w-full max-w-xs">
           <select (change)="setTicketWithEvent($event)" class="bg-gray-700 border border-gray-700 rounded-xl p-2">
             <option value="area">Tickets del Área</option>
-            <option value="my">Mis Tickets</option>
-            @if (user()?.role === 'trabajador' && (areaUser() == 'Académico' || areaUser() == 'TI')) {
-              <option value="quejas">Quejas</option>
-            }
+            <option value="my">Mis Tickets</option>   
+            <option value="quejas">Quejas</option>
+            
           </select>
         </div>
 
